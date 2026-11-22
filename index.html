@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>しっぽ取り鬼ごっこ</title>
+<meta property="og:title" content="しっぽ取り鬼ごっこ">
+<meta property="og:description" content="体育館でしっぽ取り！取られたら即終了、最後の1人を目指せ">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sa008ta.github.io/shippo-tori/">
+<meta property="og:image" content="https://sa008ta.github.io/shippo-tori/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="しっぽ取り鬼ごっこ">
+<meta name="twitter:description" content="体育館でしっぽ取り！取られたら即終了、最後の1人を目指せ">
+<meta name="twitter:image" content="https://sa008ta.github.io/shippo-tori/cover.png">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; overflow:hidden; background:#20242c; font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif; }
+  #gl { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  .screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:14px; z-index:30; overflow-y:auto; }
+  .hidden { display:none !important; }
+  .card { background:#fffdf4; border-radius:24px; padding:20px 24px; max-width:430px; width:100%; max-height:96dvh; overflow-y:auto; box-shadow:0 14px 44px rgba(10,20,40,.4); text-align:center; }
+  .hero { margin:-20px -24px 12px; padding:20px 18px 14px; border-radius:24px 24px 0 0; background:linear-gradient(160deg,#7a4a21,#a06a2c 60%,#bd8438); color:#fff; position:relative; overflow:hidden; }
+  .hero::before { content:"🏳️"; position:absolute; right:-6px; top:-14px; font-size:120px; opacity:.18; transform:rotate(14deg); }
+  .hero h1 { font-size:26px; letter-spacing:.03em; text-shadow:0 3px 0 rgba(0,0,0,.25); }
+  .hero h1 .gold { color:#ffd23e; }
+  .hero .sub { margin-top:6px; font-size:13px; color:#ffe9c4; font-weight:700; }
+  .howto { text-align:left; font-size:13px; line-height:1.65; color:#44543a; margin:4px 2px 14px; font-weight:600; }
+  .nameRow { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .nameRow input { flex:1; min-width:0; font-size:16px; padding:11px 12px; border:2px solid #d8c49a; border-radius:12px; font-family:inherit; font-weight:700; color:#23301c; background:#fff; }
+  .btn { display:block; width:100%; border:none; cursor:pointer; font-family:inherit; font-weight:900; border-radius:16px; padding:12px 10px; font-size:17px; margin-top:8px; }
+  .btn.main { background:linear-gradient(180deg,#ffd23e,#f5a623); color:#4a2f00; box-shadow:0 5px 0 #c47f0a; }
+  .btn.sub { background:#f5eedd; color:#6b4a1f; box-shadow:0 4px 0 #d8c49a; font-size:15px; }
+  .btn:active { transform:translateY(3px); box-shadow:none; }
+  .bestLine { font-size:13px; font-weight:800; color:#8a6d3b; margin-top:8px; }
+  #hud { position:fixed; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:20; pointer-events:none; }
+  .pill { display:inline-block; background:rgba(255,255,255,.94); border-radius:999px; padding:9px 16px; font-weight:900; font-size:15px; box-shadow:0 4px 14px rgba(20,30,10,.25); color:#33302a; }
+  #plusT { display:inline-block; margin-left:5px; font-weight:900; font-size:17px; color:#2e9e4f; opacity:0; transform:scale(.7); transition:opacity .25s, transform .25s; vertical-align:middle; }
+  #plusT.on { opacity:1; transform:scale(1.1); }
+  #quitBtn { position:fixed; top:calc(58px + env(safe-area-inset-top)); right:10px; z-index:21; border:none; background:rgba(255,255,255,.92); color:#6b5a3e; font-family:inherit; font-weight:900; font-size:13px; border-radius:999px; padding:9px 15px; cursor:pointer; box-shadow:0 4px 14px rgba(20,30,10,.2); }
+  #dashBtn { position:fixed; right:16px; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:21; width:92px; height:92px; border-radius:50%; border:none; background:radial-gradient(circle at 35% 30%, #ffe27a, #f5a623); color:#4a2f00; font-family:inherit; font-weight:900; font-size:17px; box-shadow:0 6px 0 #c47f0a, 0 10px 22px rgba(0,0,0,.3); cursor:pointer; }
+  #dashBtn:active { transform:translateY(4px); box-shadow:0 2px 0 #c47f0a; }
+  #dashBtn.cd { filter:grayscale(.7); opacity:.55; }
+  #grabBtn { position:fixed; right:16px; bottom:calc(126px + env(safe-area-inset-bottom)); z-index:21; width:92px; height:92px; border-radius:50%; border:none; background:radial-gradient(circle at 35% 30%, #ff9d8a, #e23b2e); color:#fff; font-family:inherit; font-weight:900; font-size:19px; box-shadow:0 6px 0 #9c1f14, 0 10px 22px rgba(0,0,0,.3); cursor:pointer; opacity:.45; filter:grayscale(.65); transition:opacity .12s, filter .12s; }
+  #grabBtn:active { transform:translateY(4px); box-shadow:0 2px 0 #9c1f14; }
+  #grabBtn.ready { opacity:1; filter:none; animation:grabPulse .5s ease-in-out infinite alternate; }
+  #stamWrap { margin-top:6px; width:150px; height:8px; border-radius:5px; background:rgba(10,16,24,.45); overflow:hidden; }
+  #stamBar { height:100%; width:100%; border-radius:5px; background:linear-gradient(90deg, #57d95e, #b7e04a); transition:width .12s linear; }
+  @keyframes grabPulse { from { box-shadow:0 6px 0 #9c1f14, 0 0 0 0 rgba(255,210,62,.75); } to { box-shadow:0 6px 0 #9c1f14, 0 0 0 16px rgba(255,210,62,0); } }
+  #danger { position:fixed; inset:0; z-index:15; pointer-events:none; opacity:0; background:radial-gradient(ellipse at center, transparent 52%, rgba(230,40,30,.55) 100%); }
+  #storyCap { position:fixed; left:50%; transform:translateX(-50%); bottom:calc(110px + env(safe-area-inset-bottom)); z-index:22; max-width:92vw; background:rgba(255,253,244,.97); color:#33302a; font-weight:900; font-size:17px; border-radius:16px; padding:12px 18px; box-shadow:0 8px 24px rgba(0,0,0,.3); text-align:center; }
+  #cheerPop { position:fixed; left:50%; top:30%; transform:translate(-50%,-50%) scale(.6); z-index:22; font-size:52px; font-weight:900; color:#ffcf3f; text-shadow:0 3px 0 #c47f0a, 0 8px 24px rgba(0,0,0,.35); opacity:0; pointer-events:none; }
+  #cheerPop.on { animation:cheerA .9s ease-out forwards; }
+  @keyframes cheerA { 0% { opacity:0; transform:translate(-50%,-50%) scale(.6) rotate(-4deg); } 25% { opacity:1; transform:translate(-50%,-50%) scale(1.15) rotate(2deg); } 60% { opacity:1; transform:translate(-50%,-50%) scale(1); } 100% { opacity:0; transform:translate(-50%,-56%) scale(1.05); } }
+  #popText { position:fixed; left:50%; top:34%; transform:translate(-50%,-50%); z-index:22; font-size:34px; font-weight:900; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.3); opacity:0; pointer-events:none; }
+  #popText.on { animation:popA .8s ease-out forwards; }
+  @keyframes popA { 0% { opacity:0; transform:translate(-50%,-40%) scale(.7); } 30% { opacity:1; transform:translate(-50%,-50%) scale(1.1); } 100% { opacity:0; transform:translate(-50%,-70%) scale(1); } }
+  #skipBtn { position:fixed; right:14px; top:calc(56px + env(safe-area-inset-top)); z-index:22; border:none; background:rgba(30,30,30,.55); color:#fff; font-family:inherit; font-weight:800; font-size:13px; border-radius:999px; padding:8px 14px; cursor:pointer; }
+  #startPop { position:fixed; left:50%; top:32%; transform:translate(-50%,-50%) scale(.6); z-index:22; font-size:56px; font-weight:900; color:#43d95e; text-shadow:0 3px 0 #1d7a2f, 0 8px 24px rgba(0,0,0,.35); opacity:0; pointer-events:none; white-space:nowrap; }
+  #startPop.on { animation:cheerA 1s ease-out forwards; }
+  .bigScore { font-size:40px; font-weight:900; color:#33302a; margin:6px 0 2px; }
+  #resComment { font-size:15px; font-weight:700; color:#6b5a3e; margin:4px 0 2px; }
+  .rankRow { display:flex; justify-content:space-between; padding:7px 10px; border-radius:8px; margin-bottom:4px; font-weight:700; font-size:14px; color:#33302a; }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="danger"></div>
+<div id="hud" class="hidden">
+  <span class="pill" id="takePill">🏳 しっぽ 0本</span>
+  <span class="pill" id="remainPill" style="margin-left:6px">のこり 30人</span>
+<span class="pill" id="timePill" style="margin-left:6px">⏱ 60</span><span id="plusT">+5</span>
+<div id="stamWrap"><div id="stamBar"></div></div>
+</div>
+<button id="quitBtn" class="hidden">やめる</button>
+<button id="dashBtn" class="hidden">💨<br>ダッシュ</button>
+<button id="grabBtn" class="hidden">🏳<br>とる</button>
+<div id="storyCap" class="hidden"></div>
+<div id="cheerPop">イエーイ！！</div>
+<div id="popText"></div>
+<button id="skipBtn" class="hidden">スキップ ▶▶</button>
+<div id="startPop">スタート！</div>
+
+<div id="screenTitle" class="screen">
+  <div class="card">
+    <div class="hero">
+      <h1>しっぽ取り<span class="gold">鬼ごっこ</span></h1>
+      <div class="sub">体育館で全員しっぽ付き。取られたら即終了</div>
+    </div>
+    <div class="howto">
+      🏃 左スティックで移動、右スティックで見渡す<br>
+      💨 近づくと「とる」ボタンが光る。押すと取れる<br>
+      💀 自分のしっぽを取られたら、その場で終了<br>
+      ⏱ 制限時間は1分<br>
+      💨 ダッシュはスタミナ消費。歩くと回復、切れると10秒バテバテ
+    </div>
+    <div class="nameRow"><span style="font-size:13px;font-weight:800;color:#8a6d3b;white-space:nowrap">👤 ユーザーネーム</span><input id="name1" maxlength="10" placeholder="ユーザーネーム"></div>
+    <button class="btn main" id="startBtn">▶ スタート</button>
+    <button class="btn sub" id="rankBtn">🏆 ランキング</button>
+    <div class="bestLine" id="titleBest">自己ベスト：0本</div>
+  </div>
+</div>
+
+<div id="screenResult" class="screen hidden">
+  <div class="card">
+    <h2 id="resHead" style="font-size:24px;color:#33302a">しっぽ取られた…</h2>
+    <div id="resCaught" class="hidden" style="font-size:17px;font-weight:900;color:#c62f24;margin:2px 0"></div>
+    <div class="bigScore" id="resScore">0本</div>
+    <div id="resComment"></div>
+    <div id="resTime" style="font-size:13px;font-weight:700;color:#8a97a5"></div>
+    <div id="resNew" class="hidden" style="color:#e07b00;font-weight:900;margin-top:4px">🎉 自己ベスト更新！</div>
+    <div class="bestLine" id="resBest">自己ベスト：0本</div>
+    <button class="btn main" id="againBtn">もう一回</button>
+    <button class="btn sub" id="imgShareBtn">📷 画像付きで共有</button>
+    <a class="btn sub" id="resShareBtn" href="#" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">𝕏で共有</a>
+    <button class="btn sub" id="resTitleBtn">タイトルへ</button>
+  </div>
+</div>
+
+<div id="screenRank" class="screen hidden">
+  <div class="card">
+    <h2 style="margin:2px 0 8px">🏆 ランキング</h2>
+    <button class="btn main" id="rankBackBtn">もどる</button>
+    <div id="rankList" style="margin-top:8px">読み込み中…</div>
+  </div>
+</div>
+
+<div id="loadErr" class="hidden" style="position:fixed;inset:auto 12px 12px 12px;z-index:50;background:#c0392b;color:#fff;font-weight:800;border-radius:12px;padding:10px 14px;text-align:center">3Dの読み込みに失敗しました。通信環境を確認してもう一度開いてください。</div>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+const canvas = document.getElementById('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x2c313a);
+scene.fog = new THREE.Fog(0x2c313a, 55, 95);
+const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 200);
+
+scene.add(new THREE.HemisphereLight(0xfff6e0, 0x54503e, 1.05));
+const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+sun.position.set(14, 22, 8);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdfeaff, 0.5);
+fill.position.set(-10, 14, -12);
+scene.add(fill);
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+
+/* ---------------- gym ---------------- */
+const mat = (c, r = 0.9) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: 0 });
+function box(w, h, d, c, x, y, z, r = 0.9) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c, r));
+  m.position.set(x, y, z);
+  scene.add(m);
+  return m;
+}
+function floorTexture() {
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 1408;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#d29a58'; c.fillRect(0, 0, 1024, 1408);
+  for (let i = 0; i < 16; i++) { // planks across the width
+    c.fillStyle = i % 2 ? 'rgba(0,0,0,0.045)' : 'rgba(255,255,255,0.05)';
+    c.fillRect(0, i * 88, 1024, 88);
+    c.fillStyle = 'rgba(90,50,10,0.35)'; c.fillRect(0, i * 88, 1024, 3);
+  }
+  for (let i = 0; i < 260; i++) { // wood grain specks
+    c.fillStyle = 'rgba(120,70,20,' + (0.04 + Math.random() * 0.06) + ')';
+    c.fillRect(Math.random() * 1024, Math.random() * 1408, 30 + Math.random() * 70, 2);
+  }
+  c.strokeStyle = '#f7f3e8'; c.lineWidth = 7;
+  c.strokeRect(71, 211, 882, 1141);                     // boundary = the playable court line (world x ±15.5, z -17.5..23; canvas y grows toward the DOOR: y = (z/50 + 0.5) * 1408)
+  c.beginPath(); c.moveTo(71, 704); c.lineTo(953, 704); c.stroke(); // centre line
+  c.beginPath(); c.arc(512, 704, 128, 0, Math.PI * 2); c.stroke(); // centre circle
+  c.strokeRect(262, 211, 500, 220);                      // key areas (stage end, door end)
+  c.strokeRect(262, 1132, 500, 220);
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+let doorPivotL = null, doorPivotR = null, doorAngle = 0;
+{
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(36, 50), new THREE.MeshStandardMaterial({ map: floorTexture(), roughness: 0.75 }));
+  floor.rotation.x = -Math.PI / 2;
+  scene.add(floor);
+  // walls (chunky, with a wainscot band)
+  const wallC = 0xe9e1cd, bandC = 0x8a9a6b;
+  box(36.8, 7, 0.8, wallC, 0, 3.5, -25.4);
+  box(36.8, 7, 0.8, wallC, 0, 3.5, 25.4);
+  box(0.8, 7, 51.6, wallC, -18.4, 3.5, 0);
+  box(0.8, 7, 51.6, wallC, 18.4, 3.5, 0);
+  box(36.8, 1.1, 0.9, bandC, 0, 0.55, -25.35);
+  box(36.8, 1.1, 0.9, bandC, 0, 0.55, 25.35);
+  box(0.9, 1.1, 51.6, bandC, -18.35, 0.55, 0);
+  box(0.9, 1.1, 51.6, bandC, 18.35, 0.55, 0);
+  // high windows on both side walls
+  const winM = new THREE.MeshStandardMaterial({ color: 0xbfe0f5, roughness: 0.3, emissive: 0x9fc8e8, emissiveIntensity: 0.55 });
+  for (const sx of [-1, 1]) for (let i = 0; i < 4; i++) {
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 1.9), winM);
+    w.position.set(sx * 17.95, 5.2, -18 + i * 12);
+    w.rotation.y = sx > 0 ? -Math.PI / 2 : Math.PI / 2;
+    scene.add(w);
+  }
+  // stage at the far end + curtain with the event name
+  box(36, 1.0, 4.6, 0x9a7a4e, 0, 0.5, -22.7);
+  const ccv = document.createElement('canvas'); ccv.width = 1024; ccv.height = 192;
+  const cx = ccv.getContext('2d');
+  cx.fillStyle = '#7e1f24'; cx.fillRect(0, 0, 1024, 192);
+  for (let i = 0; i < 32; i++) { cx.fillStyle = i % 2 ? 'rgba(0,0,0,0.16)' : 'rgba(255,255,255,0.05)'; cx.fillRect(i * 32, 0, 32, 192); }
+  const ctex = new THREE.CanvasTexture(ccv); ctex.colorSpace = THREE.SRGBColorSpace;
+  const curtain = new THREE.Mesh(new THREE.PlaneGeometry(30, 5.6), new THREE.MeshStandardMaterial({ map: ctex, roughness: 0.95 }));
+  curtain.position.set(0, 3.9, -20.35);
+  scene.add(curtain);
+  box(36.8, 0.9, 0.7, 0x5d171b, 0, 6.9, -20.3); // valance
+  // basketball hoops at both ends
+  for (const sz of [-1, 1]) {
+    box(0.35, 3.9, 0.35, 0x666c74, 0, 1.95, sz * 24.4);
+    const board = box(1.9, 1.25, 0.12, 0xf2f2ee, 0, 3.6, sz * 23.6);
+    board.material = new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.5 });
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.045, 8, 20), mat(0xe8641e, 0.5));
+    rim.rotation.x = Math.PI / 2;
+    rim.position.set(0, 3.15, sz * 23.05);
+    scene.add(rim);
+  }
+  // ceiling beams
+  for (let i = 0; i < 5; i++) box(36.8, 0.55, 0.8, 0x4a4238, 0, 7.1, -20 + i * 10);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(36.8, 51.6), mat(0x3a3f47, 1));
+  ceil.rotation.x = Math.PI / 2; ceil.position.y = 7.45;
+  scene.add(ceil);
+  // wall clock + exit glow (small set dressing)
+  const clock = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 24), mat(0xf5f2e8, 0.4));
+  clock.rotation.x = Math.PI / 2; clock.position.set(-8, 5.6, -24.95);
+  scene.add(clock);
+  // entrance door on the front wall (intruders come in here): hinged double doors that swing open
+  box(2.6, 3.1, 0.25, 0x7a5c38, 6, 1.55, 24.95);
+  const doorDark = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 2.9), new THREE.MeshBasicMaterial({ color: 0x14100c }));
+  doorDark.position.set(6, 1.45, 24.93); doorDark.rotation.y = Math.PI;
+  scene.add(doorDark);
+  const doorMat = mat(0x96754a, 0.8);
+  doorPivotL = new THREE.Group(); doorPivotL.position.set(4.78, 0, 24.9);
+  const doorL = new THREE.Mesh(new THREE.BoxGeometry(1.14, 2.9, 0.1), doorMat); doorL.position.set(0.57, 1.45, 0); doorPivotL.add(doorL); scene.add(doorPivotL);
+  doorPivotR = new THREE.Group(); doorPivotR.position.set(7.22, 0, 24.9);
+  const doorR = new THREE.Mesh(new THREE.BoxGeometry(1.14, 2.9, 0.1), doorMat); doorR.position.set(-0.57, 1.45, 0); doorPivotR.add(doorR); scene.add(doorPivotR);
+  box(1.5, 0.42, 0.28, 0x2e9e5b, 6, 3.45, 24.9);
+}
+
+/* ---------------- kids ---------------- */
+const SKINS = [0xf2c79b, 0xe8b184, 0xd99e6a, 0xf6d3a7];
+function makeKid(o) {
+  // runaway-cheese style: all rounded primitives — capsule torso and limbs, sphere head, no boxes, no face
+  const g = new THREE.Group();
+  const shirtM = mat(o.shirt, 0.85), shortsM = mat(o.shorts, 0.85), skinM = mat(o.skin, 0.7), hairM = mat(o.hair, 0.95);
+  const shoeM = mat(0xf5f5f5, 0.6);
+  function limb(r, len, m) { return new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 10), m); }
+  function makeLeg(side) {
+    const grp = new THREE.Group(); grp.position.set(0.11 * side, 0.52, 0);
+    const leg = limb(0.055, 0.35, shortsM); leg.position.y = -0.23; grp.add(leg);
+    const shoe = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 10), shoeM); shoe.scale.set(1, 0.55, 1.5); shoe.position.set(0, -0.47, 0.03); grp.add(shoe);
+    return grp;
+  }
+  function makeArm(side) {
+    const grp = new THREE.Group(); grp.position.set(0.23 * side, 1.06, 0);
+    const up = limb(0.045, 0.14, shirtM); up.position.y = -0.11; grp.add(up);
+    const fore = limb(0.04, 0.12, skinM); fore.position.y = -0.30; grp.add(fore);
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), skinM); hand.position.y = -0.42; grp.add(hand);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 8), shirtM); cap.position.set(-0.03 * side, 0.02, 0); grp.add(cap);
+    return grp;
+  }
+  const legL = makeLeg(-1), legR = makeLeg(1);
+  const armL = makeArm(-1), armR = makeArm(1);
+  const torso = limb(0.17, 0.30, shirtM); torso.position.y = 0.84;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 18, 14), skinM); head.position.y = 1.28;
+  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.185, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hairM); hair.position.y = 1.305;
+  const tailPivot = new THREE.Group(); tailPivot.position.set(0, 0.6, -0.17);
+  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.52, 0.045), new THREE.MeshStandardMaterial({ color: o.tailColor, roughness: 0.8, side: THREE.DoubleSide }));
+  ribbon.position.y = -0.24;
+  tailPivot.add(ribbon);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.42, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
+  g.add(legL, legR, torso, armL, armR, head, hair, tailPivot, shadow);
+  g.scale.setScalar(o.scale || 1);
+  scene.add(g);
+  const K = { g, tailPivot, ribbon, sit: 0, phase: Math.random() * 6.28, tailState: 1 };
+  K.pose = (a, dt, now) => {
+    const s = K.sit, run = a.run || 0;
+    K.phase += dt * (1.5 + run * 13.5);
+    const sw = Math.sin(K.phase) * 0.55 * run * (1 - s);
+    legL.rotation.x = sw + s * -1.5;
+    legR.rotation.x = -sw + s * -1.5;
+    legL.position.y = 0.52 - s * 0.46; legR.position.y = 0.52 - s * 0.46; // sitting drops the hips almost to the floor — the whole figure used to hover ~0.18 above it
+    torso.position.y = 0.84 - s * 0.52;
+    torso.rotation.x = run * 0.1 + s * 0.12;
+    armL.rotation.x = -sw * 0.8 + s * 0.5;
+    armR.rotation.x = sw * 0.8 + s * 0.5;
+    armL.position.y = 1.06 - s * 0.52; armR.position.y = 1.06 - s * 0.52;
+    head.position.y = 1.28 - s * 0.52;
+    hair.position.y = 1.305 - s * 0.52;
+    tailPivot.position.y = 0.6 - s * 0.45;
+    tailPivot.rotation.x = 0.25 + Math.sin(K.phase * 0.9) * 0.16 * run + run * 0.35;
+  };
+  return K;
+}
+function makeDog(o) {
+  const g = new THREE.Group();
+  const furM = mat(o.shirt, 0.95), darkM = mat(0x5a4230, 0.95);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.78), furM); body.position.y = 0.48;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.28, 0.34), furM); head.position.set(0, 0.62, 0.48);
+  const snout = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.14, 0.2), darkM); snout.position.set(0, 0.56, 0.72);
+  const earL = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.2, 0.05), darkM); earL.position.set(-0.13, 0.82, 0.42); earL.rotation.z = 0.25;
+  const earR = earL.clone(); earR.position.x = 0.13; earR.rotation.z = -0.25;
+  const legFL = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.34, 0.09), furM); legFL.position.set(-0.11, 0.17, 0.28);
+  const legFR = legFL.clone(); legFR.position.x = 0.11;
+  const legBL = legFL.clone(); legBL.position.z = -0.28;
+  const legBR = legFL.clone(); legBR.position.set(0.11, 0.17, -0.28);
+  const tailPivot = new THREE.Group(); tailPivot.position.set(0, 0.6, -0.4);
+  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.34, 0.07), furM);
+  ribbon.position.y = 0.15;
+  tailPivot.add(ribbon);
+  tailPivot.rotation.x = -0.7;
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.45, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
+  g.add(body, head, snout, earL, earR, legFL, legFR, legBL, legBR, tailPivot, shadow);
+  scene.add(g);
+  const K = { g, tailPivot, ribbon, sit: 0, phase: Math.random() * 6.28, tailState: 1 };
+  K.pose = (a, dt, now) => {
+    const s = K.sit, run = a.run || 0;
+    K.phase += dt * (6 + run * 16);
+    const tr = Math.sin(K.phase) * 0.5 * run * (1 - s);
+    legFL.rotation.x = tr; legBR.rotation.x = tr;
+    legFR.rotation.x = -tr; legBL.rotation.x = -tr;
+    body.position.y = 0.48 - s * 0.24 + Math.abs(Math.sin(K.phase)) * 0.03 * run;
+    head.position.y = 0.62 - s * 0.26;
+    snout.position.y = 0.56 - s * 0.26;
+    earL.position.y = 0.82 - s * 0.26; earR.position.y = 0.82 - s * 0.26;
+    tailPivot.rotation.y = Math.sin(now * 0.012) * 0.45; // tail wag
+  };
+  return K;
+}
+function makeCat(o) {
+  const g = new THREE.Group();
+  const furM = mat(o.shirt, 0.95), darkM = mat(0x333333, 0.95);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.55), furM); body.position.y = 0.36;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.22, 0.24), furM); head.position.set(0, 0.48, 0.36);
+  const earL = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.15, 4), furM); earL.position.set(-0.08, 0.65, 0.34);
+  const earR = earL.clone(); earR.position.x = 0.08;
+  const legFL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.26, 0.06), furM); legFL.position.set(-0.08, 0.13, 0.19);
+  const legFR = legFL.clone(); legFR.position.x = 0.08;
+  const legBL = legFL.clone(); legBL.position.z = -0.19;
+  const legBR = legFL.clone(); legBR.position.set(0.08, 0.13, -0.19);
+  const tailPivot = new THREE.Group(); tailPivot.position.set(0, 0.44, -0.28);
+  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.42, 0.05), furM);
+  ribbon.position.y = 0.19;
+  tailPivot.add(ribbon);
+  tailPivot.rotation.x = -2.1;
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.32, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
+  g.add(body, head, earL, earR, legFL, legFR, legBL, legBR, tailPivot, shadow);
+  scene.add(g);
+  const K = { g, tailPivot, ribbon, sit: 0, phase: Math.random() * 6.28, tailState: 1 };
+  K.pose = (a, dt, now) => {
+    const s = K.sit, run = a.run || 0;
+    K.phase += dt * (7 + run * 18);
+    const tr = Math.sin(K.phase) * 0.5 * run * (1 - s);
+    legFL.rotation.x = tr; legBR.rotation.x = tr;
+    legFR.rotation.x = -tr; legBL.rotation.x = -tr;
+    body.position.y = 0.36 - s * 0.17;
+    head.position.y = 0.48 - s * 0.19;
+    earL.position.y = 0.65 - s * 0.19; earR.position.y = 0.65 - s * 0.19;
+    tailPivot.rotation.y = Math.sin(now * 0.014) * 0.4;
+  };
+  return K;
+}
+function makeElephant(o) {
+  const g = new THREE.Group();
+  const grayM = mat(0x9aa0a6, 0.95), darkM = mat(0x6a7076, 0.95);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.05, 1.7), grayM); body.position.y = 1.02;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.72, 0.6), grayM); head.position.set(0, 1.25, 1.05);
+  const earL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.62, 0.52), darkM); earL.position.set(-0.47, 1.32, 0.9);
+  const earR = earL.clone(); earR.position.x = 0.47;
+  const trunk = new THREE.Group(); trunk.position.set(0, 1.15, 1.32);
+  const t1 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.52, 0.22), grayM); t1.position.y = -0.24;
+  const t2 = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.48, 0.17), grayM); t2.position.set(0, -0.62, 0.08);
+  const t3 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.3, 0.14), grayM); t3.position.set(0, -0.92, 0.14);
+  trunk.add(t1, t2, t3);
+  const legFL = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.62, 0.27), darkM); legFL.position.set(-0.38, 0.31, 0.55);
+  const legFR = legFL.clone(); legFR.position.x = 0.38;
+  const legBL = legFL.clone(); legBL.position.z = -0.55;
+  const legBR = legFL.clone(); legBR.position.set(0.38, 0.31, -0.55);
+  const tailPivot = new THREE.Group(); tailPivot.position.set(0, 1.3, -0.88);
+  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.55, 0.06), darkM);
+  ribbon.position.y = -0.26;
+  tailPivot.add(ribbon);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(1.05, 22), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
+  g.add(body, head, earL, earR, trunk, legFL, legFR, legBL, legBR, tailPivot, shadow);
+  scene.add(g);
+  const K = { g, tailPivot, ribbon, sit: 0, phase: Math.random() * 6.28, tailState: 1 };
+  K.pose = (a, dt, now) => {
+    const s = K.sit, run = a.run || 0;
+    K.phase += dt * (3 + run * 6);
+    const tr = Math.sin(K.phase) * 0.3 * run * (1 - s);
+    legFL.rotation.x = tr + s * 1.1; legBR.rotation.x = tr - s * 1.1;
+    legFR.rotation.x = -tr + s * 1.1; legBL.rotation.x = -tr - s * 1.1;
+    const dy = s * 0.4;
+    body.position.y = 1.02 - dy;
+    head.position.y = 1.25 - dy;
+    earL.position.y = 1.32 - dy; earR.position.y = 1.32 - dy;
+    trunk.position.y = 1.15 - dy;
+    trunk.rotation.x = Math.sin(now * 0.004) * 0.1 + run * 0.08;
+    tailPivot.rotation.x = Math.sin(now * 0.006) * 0.2;
+  };
+  return K;
+}
+function makeGiraffe(o) {
+  const g = new THREE.Group();
+  const scv = document.createElement('canvas'); scv.width = 128; scv.height = 128;
+  const sx = scv.getContext('2d');
+  sx.fillStyle = '#e3b959'; sx.fillRect(0, 0, 128, 128);
+  sx.fillStyle = '#a06a28';
+  for (let i = 0; i < 16; i++) { sx.beginPath(); sx.arc(Math.random() * 128, Math.random() * 128, 7 + Math.random() * 10, 0, 7); sx.fill(); }
+  const stex = new THREE.CanvasTexture(scv); stex.colorSpace = THREE.SRGBColorSpace;
+  const spotM = new THREE.MeshStandardMaterial({ map: stex, roughness: 0.9 });
+  const tanM = mat(0xe3b959, 0.9), darkM = mat(0x8a6a34, 0.95);
+  const legFL = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.95, 0.11), tanM); legFL.position.set(-0.2, 0.475, 0.42);
+  const legFR = legFL.clone(); legFR.position.x = 0.2;
+  const legBL = legFL.clone(); legBL.position.z = -0.42;
+  const legBR = legFL.clone(); legBR.position.set(0.2, 0.475, -0.42);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.55, 1.05), spotM); body.position.y = 1.22;
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.05, 0.26), spotM); neck.position.set(0, 2.0, 0.68); neck.rotation.x = 0.47;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.26, 0.44), tanM); head.position.set(0, 2.56, 0.98);
+  const ossL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.16, 0.06), darkM); ossL.position.set(-0.08, 2.76, 0.9);
+  const ossR = ossL.clone(); ossR.position.x = 0.08;
+  const tailPivot = new THREE.Group(); tailPivot.position.set(0, 1.38, -0.55);
+  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.05), darkM);
+  ribbon.position.y = -0.24;
+  tailPivot.add(ribbon);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.55, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
+  g.add(legFL, legFR, legBL, legBR, body, neck, head, ossL, ossR, tailPivot, shadow);
+  scene.add(g);
+  const K = { g, tailPivot, ribbon, sit: 0, phase: Math.random() * 6.28, tailState: 1 };
+  K.pose = (a, dt, now) => {
+    const s = K.sit, run = a.run || 0;
+    K.phase += dt * (5 + run * 12);
+    const tr = Math.sin(K.phase) * 0.45 * run * (1 - s);
+    legFL.rotation.x = tr + s * 1.3; legBR.rotation.x = tr - s * 1.3;
+    legFR.rotation.x = -tr + s * 1.3; legBL.rotation.x = -tr - s * 1.3;
+    const dy = s * 0.55;
+    body.position.y = 1.22 - dy;
+    neck.position.y = 2.0 - dy; neck.rotation.x = 0.47 + Math.sin(K.phase * 0.5) * 0.05 - s * 0.3;
+    head.position.y = 2.56 - dy - s * 0.2;
+    ossL.position.y = 2.76 - dy - s * 0.2; ossR.position.y = 2.76 - dy - s * 0.2;
+    tailPivot.rotation.x = Math.sin(now * 0.008) * 0.25;
+  };
+  return K;
+}
+function makeHorse(o) {
+  const g = new THREE.Group();
+  const furM = mat(o.shirt, 0.9), darkM = mat(0x2e2019, 0.95), maneM = mat(0x2e2019, 0.95);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.55, 1.25), furM); body.position.y = 0.95;
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.62, 0.3), furM); neck.position.set(0, 1.32, 0.68); neck.rotation.x = -0.5;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.26, 0.52), furM); head.position.set(0, 1.62, 0.92);
+  const snout = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.19, 0.22), darkM); snout.position.set(0, 1.56, 1.2);
+  const earL = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.16, 0.05), furM); earL.position.set(-0.08, 1.82, 0.78); earL.rotation.z = 0.2;
+  const earR = earL.clone(); earR.position.x = 0.08; earR.rotation.z = -0.2;
+  const mane = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.66, 0.34), maneM); mane.position.set(0, 1.42, 0.56); mane.rotation.x = -0.5;
+  const legFL = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.72, 0.11), furM); legFL.position.set(-0.17, 0.36, 0.45);
+  const legFR = legFL.clone(); legFR.position.x = 0.17;
+  const legBL = legFL.clone(); legBL.position.z = -0.45;
+  const legBR = legFL.clone(); legBR.position.set(0.17, 0.36, -0.45);
+  const tailPivot = new THREE.Group(); tailPivot.position.set(0, 1.15, -0.65);
+  const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.6, 0.09), maneM);
+  ribbon.position.y = -0.28;
+  tailPivot.add(ribbon);
+  tailPivot.rotation.x = 0.5;
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.85, 22), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.22 }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.02;
+  g.add(body, neck, head, snout, earL, earR, mane, legFL, legFR, legBL, legBR, tailPivot, shadow);
+  scene.add(g);
+  const K = { g, tailPivot, ribbon, sit: 0, phase: Math.random() * 6.28, tailState: 1 };
+  K.pose = (a, dt, now) => {
+    const s = K.sit, run = a.run || 0;
+    K.phase += dt * (5 + run * 13);
+    const tr = Math.sin(K.phase) * 0.55 * run * (1 - s); // gallop: front pair and back pair swing against each other
+    legFL.rotation.x = tr; legFR.rotation.x = tr;
+    legBL.rotation.x = -tr; legBR.rotation.x = -tr;
+    const dy = s * 0.35;
+    body.position.y = 0.95 - dy + Math.abs(Math.sin(K.phase)) * 0.04 * run;
+    neck.position.y = 1.32 - dy; head.position.y = 1.62 - dy; snout.position.y = 1.56 - dy;
+    earL.position.y = 1.82 - dy; earR.position.y = 1.82 - dy; mane.position.y = 1.42 - dy;
+    tailPivot.rotation.x = 0.5 + Math.sin(now * 0.007) * 0.18;
+  };
+  return K;
+}
+const kids = new Map();
+let flyMesh = null, flyT = 99, flyFrom = new THREE.Vector3(), flyDir = new THREE.Vector3();
+function startFly(x, y, z, backX, backZ, color) {
+  if (!flyMesh) {
+    flyMesh = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.52, 0.045), new THREE.MeshStandardMaterial({ roughness: 0.8, side: THREE.DoubleSide, transparent: true }));
+    scene.add(flyMesh);
+  }
+  flyMesh.material.color.setHex(color);
+  flyMesh.material.opacity = 1;
+  flyMesh.visible = true;
+  flyFrom.set(x, y, z);
+  flyDir.set(backX, 0, backZ);
+  flyT = 0;
+}
+const camPos = new THREE.Vector3(0, 4.5, 16), camLook = new THREE.Vector3(0, 1, 0);
+let lastMs = performance.now();
+
+function frame(st) {
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - lastMs) / 1000) * (st.timeScale || 1);
+  lastMs = now;
+  const seen = new Set();
+  for (const a of st.actors) {
+    seen.add(a.id);
+    let k = kids.get(a.id);
+    if (!k) { k = a.kind === 'dog' ? makeDog(a) : a.kind === 'cat' ? makeCat(a) : a.kind === 'elephant' ? makeElephant(a) : a.kind === 'giraffe' ? makeGiraffe(a) : a.kind === 'horse' ? makeHorse(a) : makeKid(a); kids.set(a.id, k); }
+    k.sit += ((a.sit || 0) - k.sit) * Math.min(1, dt * 7);
+    k.g.position.set(a.x, (a.bounce ? Math.abs(Math.sin(now * 0.02)) * 0.13 : 0), a.z);
+    k.g.rotation.y = a.dir;
+    k.pose(a, dt, now);
+    // tail
+    if (a.tail === 2 && k.tailState === 1) {
+      const fx = Math.sin(a.dir), fz = Math.cos(a.dir);
+      startFly(a.x - fx * 0.2, a.tailY || 0.55, a.z - fz * 0.2, -fx, -fz, a.tailColor);
+      k.tailState = 2;
+    }
+    if (a.tail === 1) k.tailState = 1;
+    if (a.tail === 0 && k.tailState !== 2) k.tailState = 0;
+    k.ribbon.visible = k.tailState === 1;
+  }
+  for (const [id, k] of kids) if (!seen.has(id)) { scene.remove(k.g); kids.delete(id); }
+  if (flyMesh && flyT < 1.1) {
+    flyT += dt;
+    const t = flyT;
+    flyMesh.position.set(flyFrom.x + flyDir.x * t * 1.6, Math.max(0.1, flyFrom.y + t * 2.4 - t * t * 3.4), flyFrom.z + flyDir.z * t * 1.6);
+    flyMesh.rotation.set(t * 7, t * 5, t * 9);
+    flyMesh.material.opacity = t > 0.8 ? Math.max(0, 1 - (t - 0.8) / 0.3) : 1;
+    if (flyT >= 1.1) flyMesh.visible = false;
+  }
+  // camera
+  let dp, dl;
+  if (st.camMode === 'story') {
+    dp = new THREE.Vector3(st.camPos.x, st.camPos.y, st.camPos.z);
+    dl = new THREE.Vector3(st.camLook.x, st.camLook.y, st.camLook.z);
+  } else {
+    const p = st.actors.find(a => a.id === 'p');
+    if (p) {
+      const fx = Math.sin(st.camDir), fz = Math.cos(st.camDir);
+      dp = new THREE.Vector3(p.x - fx * 7.6, 4.0, p.z - fz * 7.6); // pulled back a little (was 6.6 / 3.6): more of the surroundings — and of what is coming — stays in frame
+      dp.x = THREE.MathUtils.clamp(dp.x, -17.4, 17.4);
+      dp.z = THREE.MathUtils.clamp(dp.z, -19.9, 23.0); // inside the gym, in front of the curtain and the hoop board: the camera never leaves the room
+      const camDist = Math.hypot(dp.x - p.x, dp.z - p.z);
+      let camY = THREE.MathUtils.clamp(1.5 + camDist * 0.34, 1.9, 4.0); // squeezed toward a wall the camera also lowers a little, so the view stays a view
+      let lookAhead = 2.6 * THREE.MathUtils.clamp(camDist / 4, 0.3, 1); // near a wall the camera sits closer: look at the player, not past them
+      const squeeze = THREE.MathUtils.clamp((3.2 - camDist) / 2.2, 0, 1); // hard against a wall there is no room behind at all: rise and look down at the player, so they stay a normal size and the surroundings stay visible
+      if (squeeze > 0) { camY += (4.8 - camY) * squeeze; lookAhead *= 1 - squeeze * 0.85; }
+      dp.y = camY;
+      dl = new THREE.Vector3(p.x + fx * lookAhead, 0.95, p.z + fz * lookAhead);
+    }
+  }
+  if (dp) {
+    const k = st.camMode === 'story' ? Math.min(1, dt * 2.2) : Math.min(1, dt * 9);
+    camPos.lerp(dp, k);
+    camLook.lerp(dl, Math.min(1, dt * (st.camMode === 'story' ? 6 : 10)));
+  }
+  if (doorPivotL) {
+    doorAngle += ((st.doorOpen ? 1 : 0) - doorAngle) * Math.min(1, dt * 3.5);
+    doorPivotL.rotation.y = doorAngle * 1.85;
+    doorPivotR.rotation.y = -doorAngle * 1.85;
+  }
+  camera.position.copy(camPos);
+  camera.lookAt(camLook);
+  renderer.render(scene, camera);
+}
+function reset() {
+  for (const [, k] of kids) scene.remove(k.g);
+  kids.clear();
+  if (flyMesh) flyMesh.visible = false;
+  flyT = 99;
+  camPos.set(0, 4.5, 16); camLook.set(0, 1, 0);
+}
+function snapshot() {
+  try { return renderer.domElement.toDataURL('image/png'); } catch (e) { return null; }
+}
+window.R3D = { frame, reset, resize, snapshot };
+</script>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const GYM_X = 15.5, GYM_Z = 23.0, GYM_ZN = -17.5; // the painted court line is the boundary; both ends sit a little inside the room
+function actorMargin(a) { return Math.min(1.1, Math.max(0.55, (a.sep || 0.72) * 0.6)); } // centres stop this far inside the line, so the body and the tail stay in too
+
+/* ================= STORE (localStorage + cookie mirror) ================= */
+const store = {
+  get(k, d) {
+    try { const v = localStorage.getItem(k); if (v !== null) return v; } catch (e) {}
+    try { const m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)')); if (m) return decodeURIComponent(m[1]); } catch (e) {}
+    return d;
+  },
+  set(k, v) {
+    try { localStorage.setItem(k, v); } catch (e) {}
+    try { document.cookie = k + '=' + encodeURIComponent(v) + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {}
+  }
+};
+
+/* ================= NAMES / NG ================= */
+const NG_WORDS = [
+  'ちんこ', 'チンコ', 'ちんぽ', 'チンポ', 'ちんちん', 'チンチン', 'ちんかす', 'まんこ', 'マンコ', 'おまんこ', 'まんかす',
+  'きんたま', 'キンタマ', '金玉', 'たまきん', 'くりとりす', 'クリトリス', '陰核', 'いんかく',
+  'ペニス', 'ぺにす', '陰茎', 'いんけい', '膣', '肛門', 'こうもん', 'アナル', 'あなる',
+  'セックス', 'せっくす', 'エロ', 'えろ', 'オナニー', 'おなにー', '自慰', '射精', 'しゃせい', '精液', 'せいえき', '精子',
+  'フェラ', 'ふぇら', 'パイズリ', 'ぱいずり', '手コキ', 'てこき', '中出し', 'なかだし', '潮吹き', 'しおふき',
+  '勃起', 'ぼっき', '淫乱', 'いんらん', '淫', '変態', 'へんたい', '痴漢', 'ちかん', 'レイプ', 'れいぷ', '強姦', 'ごうかん',
+  'ロリ', 'ろり', 'ショタ', 'しょた', 'ふたなり', '風俗', 'ふうぞく', 'ソープランド', 'そーぷ', '愛液', 'あいえき',
+  '巨乳', 'きょにゅう', 'おっぱい', 'オッパイ', '乳首', 'ちくび', '処女', 'しょじょ', '童貞', 'どうてい',
+  'ヤリマン', 'やりまん', 'ビッチ', 'びっち', '売春', 'ばいしゅん', '援交', 'えんこう', 'パパ活', 'ぱぱかつ',
+  'うんこ', 'ウンコ', 'くそったれ', 'クソッタレ', '死ね', 'しね',
+  'fuck', 'shit', 'dick', 'cock', 'pussy', 'bitch', 'porn', 'sex', 'anal', 'cum', 'tits', 'boobs', 'penis', 'vagina', 'hentai', 'whore', 'slut', 'nigger'
+];
+function ngNorm(s) {
+  return (s || '').toLowerCase()
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .replace(/[\s　・._\-ー]/g, '');
+}
+const NG_NORM = NG_WORDS.map(ngNorm);
+function hasNG(s) { const n = ngNorm(s); return NG_NORM.some(w => w && n.includes(w)); }
+function cleanName(s, fallback) {
+  s = (s || '').trim();
+  if (!s || !hasNG(s)) return s;
+  let out = s;
+  for (const w of NG_WORDS) out = out.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '＊'.repeat(Math.max(2, w.length)));
+  return hasNG(out) ? fallback : out;
+}
+function myName() { return cleanName(store.get('shippo_name', ''), 'NONAME') || 'NONAME'; }
+
+/* ================= AUDIO ================= */
+let AC = null;
+function ac() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+  if (AC && AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(f, t0, dur, type, vol, slideTo) {
+  const a = ac(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(f, a.currentTime + t0);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, a.currentTime + t0 + dur);
+  g.gain.setValueAtTime(0, a.currentTime + t0);
+  g.gain.linearRampToValueAtTime(vol || 0.15, a.currentTime + t0 + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + t0 + dur);
+  o.connect(g).connect(a.destination);
+  o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + dur + 0.05);
+}
+function sndWhistle() { tone(2350, 0, 0.14, 'square', 0.06); tone(2350, 0.2, 0.3, 'square', 0.06); }
+function sndPop() { tone(660, 0, 0.09, 'triangle', 0.2, 990); tone(1320, 0.05, 0.1, 'sine', 0.12); }
+function sndCaught() { tone(392, 0, 0.18, 'triangle', 0.18); tone(330, 0.16, 0.2, 'triangle', 0.18); tone(262, 0.34, 0.34, 'triangle', 0.18); }
+function sndCheer() {
+  const a = ac(); if (!a) return;
+  const len = a.sampleRate * 0.5, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = a.createBufferSource(); src.buffer = buf;
+  const f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1100; f.Q.value = 0.6;
+  const g = a.createGain(); g.gain.value = 0.16;
+  src.connect(f).connect(g).connect(a.destination); src.start();
+  tone(523, 0, 0.12, 'triangle', 0.1); tone(659, 0.08, 0.12, 'triangle', 0.1); tone(784, 0.16, 0.16, 'triangle', 0.1);
+}
+function sndWin() { [523, 659, 784, 1046].forEach((f, i) => tone(f, i * 0.11, 0.22, 'triangle', 0.16)); tone(1318, 0.46, 0.4, 'triangle', 0.14); }
+
+/* ================= RANKING (filled in once the form exists) ================= */
+const RANK_POST = 'https://docs.google.com/forms/d/e/1FAIpQLSd_sCXgJ1zIZgH5XEkmnRyFPZIwXEVzEb5y5jWhY1q4ULwRVg/formResponse';
+const RANK_ENT = { name: 'entry.1773616264', score: 'entry.2093439352', pid: 'entry.1104049057', date: 'entry.1027164764' };
+const RANK_SHEET = '1IpiEClMYQJLWT6tSAwGU6vMh59eoHb8yWyP3E9VlqQM';
+function playerId() {
+  let p = store.get('shippo_pid', '');
+  if (!p) { p = 'p' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); store.set('shippo_pid', p); }
+  return p;
+}
+function formPost(url, ent, data) {
+  try {
+    const body = new URLSearchParams();
+    for (const k in data) body.append(ent[k], String(data[k]));
+    fetch(url, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
+  } catch (e) {}
+}
+async function sheetLoad(sheetId) {
+  try {
+    const r = await fetch('https://docs.google.com/spreadsheets/d/' + sheetId + '/gviz/tq?tqx=out:json&cb=' + Date.now());
+    const t = await r.text();
+    const j = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1));
+    return j.table.rows.map(row => (row.c || []).map(c => (c && c.v != null ? String(c.v) : '')));
+  } catch (e) { return null; }
+}
+function submitScore(score) {
+  if (!RANK_POST || score <= 0) return;
+  const sub = +(store.get('shippo_sub', '0') || 0);
+  if (score <= sub) return;
+  store.set('shippo_sub', String(score));
+  formPost(RANK_POST, RANK_ENT, { name: myName(), score, pid: playerId(), date: new Date().toISOString().slice(0, 10) });
+}
+
+/* ================= INPUT (twin sticks: left = move, right = aim; + dash) ================= */
+const stick = { on: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0, baseDir: 0 };
+const stickR = { on: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0, baseDir: 0, lastX: 0 };
+addEventListener('pointerdown', e => {
+  if (G.screen !== 'game') return;
+  if (e.target.closest('button, input, .card')) return;
+  const S = e.clientX < innerWidth * 0.5 ? stick : stickR;
+  if (S.on) return;
+  S.on = true; S.id = e.pointerId; S.ox = e.clientX; S.oy = e.clientY; S.dx = 0; S.dy = 0;
+  S.baseDir = G ? G.camDir : Math.PI; // lock the steering frame at touch start: the camera swinging behind you must not bend the direction you're holding
+  S.lastX = e.clientX;
+});
+addEventListener('pointermove', e => {
+  for (const S of [stick, stickR]) {
+    if (!S.on || e.pointerId !== S.id) continue;
+    if (S === stickR) {
+      // camera orbit: rotate by the finger's travel since the last event — no origin, no clamp, nothing to desync or whip
+      const ddx = e.clientX - S.lastX;
+      S.lastX = e.clientX;
+      if (G && G.screen === 'game') { const v = G.camDir - ddx * 0.011; G.camDir = Math.atan2(Math.sin(v), Math.cos(v)); }
+      continue;
+    }
+    S.dx = e.clientX - S.ox; S.dy = e.clientY - S.oy;
+    const m = Math.hypot(S.dx, S.dy);
+    if (m > 90) { S.ox = e.clientX - S.dx / m * 90; S.oy = e.clientY - S.dy / m * 90; S.dx = e.clientX - S.ox; S.dy = e.clientY - S.oy; }
+  }
+});
+function stickEnd(e) { for (const S of [stick, stickR]) if (e.pointerId === S.id) { S.on = false; S.dx = 0; S.dy = 0; } }
+addEventListener('pointerup', stickEnd);
+addEventListener('pointercancel', stickEnd);
+$('dashBtn').addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (G.screen === 'game' && !G.over && G.exhaustT <= 0 && G.stamina > 0) { G.dashT = 0.45; G.dashDir = player().dir; G.stamina = Math.max(0, G.stamina - 30); if (G.stamina <= 0) G.exhaustT = 10; tone(300, 0, 0.16, 'sawtooth', 0.05, 620); }
+});
+
+/* ================= GAME ================= */
+const SHIRTS = [0xe8574a, 0x4a90d9, 0x5cb85c, 0xf2b13c, 0x9b7ed9, 0xef7fb0, 0x4fc3c3, 0xe8e3d8, 0x7a9e43, 0xd96c33, 0x5a6e8c, 0xb84a6e];
+const SHORTS = [0x27355c, 0xa02c2c, 0x27355c, 0x2c4a2e, 0xa02c2c, 0x27355c];
+const HAIRS = [0x2b2320, 0x3a2a1a, 0x1d1d22, 0x4a3220];
+let G = null;
+
+function mkActor(id, i, isPlayer, isTeacher) {
+  return {
+    id, kind: 'kid', tailOff: 0.45, reach: 0.75, sep: 0.72, tailY: 0.55, x: 0, z: 0, dir: 0, targetDir: 0,
+    speed: 0, baseSpeed: isPlayer ? 7.5 : 6.5 + Math.random() * 0.6, // classmates: just a touch slower than before (6.6 + 0.7) — the user's "ほんのちょっとだけ弱く"
+    turn: isPlayer ? 14 : 2.7 + Math.random() * 0.7,
+    tail: 0, flyT: null, out: false, sit: 1, bounce: false, runF: 0,
+    thinkT: Math.random() * 0.15, grabCd: 0, tx: 0, tz: 0, hasTarget: false, tgt: null,
+    dashT: 0, dashCd: 1.5 + Math.random() * 2, dashMul: 1.5, noDash: false, moveDir: 0, lungeRange: 2.3, dashCdBase: 3.1, dashCdRand: 1.8, wkind: null,
+    pauseT: 0, idleT: 2 + Math.random() * 5, canPause: false,
+    shirt: isTeacher ? 0x37474f : isPlayer ? 0x35a7e8 : SHIRTS[i % SHIRTS.length],
+    shorts: isTeacher ? 0x22262b : isPlayer ? 0x20304a : SHORTS[i % SHORTS.length],
+    skin: [0xf2c79b, 0xe8b184, 0xd99e6a, 0xf6d3a7][i % 4],
+    hair: HAIRS[i % HAIRS.length],
+    tailColor: isPlayer ? 0xffd23e : 0xe23b2e,
+    scale: isTeacher ? 1.24 : 0.92 + (i % 4) * 0.035
+  };
+}
+function setupClassroom() {
+  const actors = [];
+  const teacher = mkActor('t', 0, false, true);
+  teacher.x = 0; teacher.z = -14.8; teacher.dir = 0; teacher.sit = 0; teacher.tail = 0;
+  actors.push(teacher);
+  for (let i = 0; i < 30; i++) {
+    const isP = i === 7;
+    const a = mkActor(isP ? 'p' : 'n' + i, i, isP, false);
+    if (!isP) a.canPause = Math.random() < 0.4; // some classmates stop and stand around now and then
+    const row = Math.floor(i / 6), col = i % 6;
+    a.x = -8 + col * 3.2 + (row % 2) * 0.8;
+    a.z = -10.6 + row * 2.5;
+    a.dir = Math.PI; a.sit = 1; a.tail = 0;
+    actors.push(a);
+  }
+  return actors;
+}
+function player() { return G.actors.find(a => a.id === 'p'); }
+function fwd(a) { return { x: Math.sin(a.dir), z: Math.cos(a.dir) }; }
+function tailPos(a) { const f = fwd(a); const o = a.tailOff || 0.45; return { x: a.x - f.x * o, z: a.z - f.z * o }; }
+function alive() { return G.actors.filter(a => a.id !== 't' && a.tail === 1 && !a.out && a.wkind !== 'principal'); } // the principal is not a competitor: nobody targets him, he never drops out, he does not count toward the win
+
+function newGameState() {
+  return {
+    screen: 'title', actors: setupClassroom(),
+    taken: 0, time: 0, graceT: 0, over: false, win: false,
+    dashT: 0, dashCd: 0, dashDir: Math.PI, camDir: Math.PI,
+    storyT: 0, cheerDone: false, standDone: false, capDone: false,
+    best: +(store.get('shippo_best', '0') || 0), playedOnce: false,
+    waveIdx: 0, repeatB: true, timeLimit: 60, waveCd: 0, annT: 0, grabReady: false, waveBase: 30, timeUp: false, lastSec: -1, stamina: 100, exhaustT: 0, slowT: 0, timeScale: 1, intro: false, waveQueue: null, waveSeqT: 0, resumeHold: 0, caughtBy: null, principalTaken: false, principalMsg: null
+  };
+}
+G = newGameState();
+
+function showScreen(name) {
+  $('screenTitle').classList.toggle('hidden', name !== 'title');
+  $('screenResult').classList.toggle('hidden', name !== 'result');
+  $('screenRank').classList.toggle('hidden', name !== 'rank');
+}
+function setHud(on) {
+  $('hud').classList.toggle('hidden', !on);
+  $('quitBtn').classList.toggle('hidden', !on);
+  $('dashBtn').classList.toggle('hidden', !on);
+  $('grabBtn').classList.toggle('hidden', !on);
+}
+function updateHud() {
+  $('takePill').textContent = '🏳 しっぽ ' + G.taken + '本';
+  $('remainPill').textContent = 'のこり ' + alive().length + '人';
+}
+
+/* ---------- story ---------- */
+function startStory() {
+  G.actors = setupClassroom();
+  G.screen = 'story';
+  G.storyT = 0; G.cheerDone = false; G.standDone = false; G.capDone = false;
+  G.playedOnce = true;
+  showScreen(null);
+  setHud(false);
+  $('skipBtn').classList.remove('hidden');
+  if (window.R3D) R3D.reset(), G.actors = setupClassroom();
+}
+function startGame() {
+  $('skipBtn').classList.add('hidden');
+  $('storyCap').classList.add('hidden');
+  const p = player();
+  p.x = 0; p.z = 15; p.dir = Math.PI; p.sit = 0; p.tail = 1; p.out = false; p.flyT = null; p.speed = 0;
+  const spots = [[-12, -14], [-6, -16], [0, -15], [6, -16], [12, -14], [-13, -6], [-8, -8], [8, -8], [13, -6], [-12, 2], [-7, 0], [7, 0], [12, 2], [-11, 9], [-5, 11], [5, 11], [11, 9], [0, 5], [-13, 14], [13, 15], [-3, -11], [3, -11], [-10, 5], [10, 5], [-4, 17], [4, 17], [0, -5], [-13, -11], [13, -11], [0, 18]];
+  let si = 0;
+  for (const a of G.actors) {
+    if (a.id === 'p' || a.id === 't') continue;
+    const s = spots[si++ % spots.length];
+    a.x = s[0] + (Math.random() * 2 - 1); a.z = s[1] + (Math.random() * 2 - 1);
+    a.dir = Math.random() * Math.PI * 2;
+    a.sit = 0; a.tail = 1; a.out = false; a.flyT = null; a.speed = 0; a.grabCd = 0; a.hasTarget = false;
+  }
+  const t = G.actors.find(a => a.id === 't');
+  t.x = -14.8; t.z = -17.5; t.dir = Math.PI / 2; t.sit = 0; t.tail = 0; // teacher watches from just inside the sideline
+  G.taken = 0; G.time = 0; G.timeLimit = 60; G.graceT = 1.2; G.over = false; G.win = false; G.timeUp = false; G.lastSec = -1;
+  G.waveIdx = 0; G.repeatB = true; G.waveCd = 0; G.annT = 0; G.intro = false; G.resumeHold = 0; G.waveQueue = null; G.waveSeqT = 0; G.caughtBy = null; G.principalTaken = false; G.principalMsg = null;
+  G.actors = G.actors.filter(a => a.id === 'p' || a.id === 't' || a.id[0] === 'n');
+  G.waveBase = alive().length;
+  G.dashT = 0; G.dashCd = 0; G.camDir = Math.PI;
+  G.stamina = 100; G.exhaustT = 0; G.slowT = 0; G.timeScale = 1;
+  p.moveDir = Math.PI;
+  G.screen = 'game';
+  G.playedOnce = true;
+  showScreen(null);
+  setHud(true);
+  updateHud();
+  sndWhistle();
+  const sp = $('startPop'); // the start call, in big letters
+  sp.classList.remove('on'); void sp.offsetWidth; sp.classList.add('on');
+}
+
+/* ---------- AI ---------- */
+function npcThink(a) {
+  const others = alive().filter(o => o !== a);
+  if (!others.length) { a.hasTarget = false; return; }
+  let threat = null, td = 1e9;
+  const f = fwd(a);
+  for (const o of others) {
+    const dx = o.x - a.x, dz = o.z - a.z, d = Math.hypot(dx, dz);
+    const behind = (f.x * dx + f.z * dz) / (d || 1) < -0.12;
+    if ((behind && d < 6.2) || d < 2.0) { if (d < td) { td = d; threat = o; } }
+  }
+  if (threat) {
+    a.tgt = null;
+    a.tx = a.x + (a.x - threat.x) * 1.6;
+    a.tz = a.z + (a.z - threat.z) * 1.6;
+    a.flee = true;
+  } else {
+    a.flee = false;
+    let best = null, bd = 1e9;
+    for (const o of others) { const d = Math.hypot(o.x - a.x, o.z - a.z) * (o.id === 'p' ? 0.55 : 1); if (d < bd) { bd = d; best = o; } } // the player draws extra attention: his distance counts as just over half
+    a.tgt = best;
+    const tp = tailPos(best), bf = fwd(best);
+    a.tx = tp.x - bf.x * 0.5; a.tz = tp.z - bf.z * 0.5; // aim just past the tail: run through it
+  }
+  // keep out of the corners: the closer to a wall, the harder the target is pulled back inside
+  const CM = 2.6;
+  if (a.x < -GYM_X + CM) a.tx += (-GYM_X + CM - a.x) * 2.4;
+  if (a.x > GYM_X - CM) a.tx -= (a.x - (GYM_X - CM)) * 2.4;
+  if (a.z < GYM_ZN + CM) a.tz += (GYM_ZN + CM - a.z) * 2.4;
+  if (a.z > GYM_Z - CM) a.tz -= (a.z - (GYM_Z - CM)) * 2.4;
+  a.tx = clamp(a.tx, -GYM_X + 0.55, GYM_X - 0.55);
+  a.tz = clamp(a.tz, GYM_ZN + 0.55, GYM_Z - 0.55);
+  a.hasTarget = true;
+}
+function turnToward(a, want, rate, dt) {
+  let d = want - a.dir;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  a.dir += clamp(d, -rate * dt, rate * dt);
+}
+function moveActor(a, dt, dirOverride) {
+  const f = dirOverride === undefined ? fwd(a) : { x: Math.sin(dirOverride), z: Math.cos(dirOverride) };
+  a.x += f.x * a.speed * dt;
+  a.z += f.z * a.speed * dt;
+  if (!a.entering) { // wave entrants walk in from the door first; once in, the line holds everyone
+    const m = actorMargin(a);
+    a.x = clamp(a.x, -GYM_X + m, GYM_X - m);
+    a.z = clamp(a.z, GYM_ZN + m, GYM_Z - m);
+  }
+  const targetRun = a.out ? 0 : clamp(a.speed / 8, 0, 1.2);
+  a.runF += (targetRun - a.runF) * Math.min(1, dt * 8);
+}
+
+/* ---------- grabs ---------- */
+function doGrab(h, v) {
+  if (h.id === 'p' && v.wkind === 'principal') {
+    // the one tail you must never take: grabbing the principal's ends the run on the spot
+    v.tail = 0; v.flyT = 0; // the ribbon comes off, but he does not sit down or drop out
+    G.principalTaken = true;
+    G.principalMsg = Math.random() < 0.5 ? '権力には逆らえない' : '退学処分を受けた'; // one of two fates, rolled on the spot
+    tone(160, 0, 0.5, 'sawtooth', 0.1, 60);
+    gameOver(false);
+    return;
+  }
+  v.tail = 0; v.flyT = 0; v.out = true; v.outT = G.time; v.sit = 1; v.speed = 0;
+  h.grabCd = 0.6;
+  if (h.id === 'p') {
+    G.taken++;
+    sndPop();
+    const pt = $('popText');
+    pt.textContent = 'とった！';
+    pt.classList.remove('on'); void pt.offsetWidth; pt.classList.add('on');
+    updateHud();
+  }
+  if (v.id === 'p') { G.caughtBy = kindName(h); G.slowT = 1.15; tone(220, 0, 0.55, 'sine', 0.12, 52); gameOver(false); return; } // caught: the grab lands in slow motion
+  if (alive().length === 1 && alive()[0].id === 'p') { gameOver(true); return; }
+  updateHud();
+}
+function checkGrabs() {
+  if (G.graceT > 0 || G.over) return;
+  const list = alive();
+  for (const h of list) {
+    if (h.id === 'p') continue; // the player takes with the とる button, never by contact
+    if (h.grabCd > 0) continue;
+    const dashing = h.dashT > 0;
+    if (!dashing) continue; // NPCs take only mid-lunge
+    for (const v of list) {
+      if (v === h) continue;
+      const tp = tailPos(v);
+      const d = Math.hypot(h.x - tp.x, h.z - tp.z);
+      const R = (h.reach || 0.6) * (v.id === 'p' && G.exhaustT > 0 ? 1.7 : 1); // a winded player is easy pickings
+      if (d < R) {
+        // face-to-face never takes: the hunter has to be at the victim's side or back, where the tail is
+        const vx = h.x - v.x, vz = h.z - v.z, vd = Math.hypot(vx, vz) || 1;
+        const vf = fwd(v);
+        if ((vf.x * vx + vf.z * vz) / vd < 0.5) {
+          // classmates were taking too much in passing: their lunge only counts when the tail is in front of them, not brushed sideways mid-crossing
+          if (!h.wkind) { const hf = fwd(h); if ((hf.x * (tp.x - h.x) + hf.z * (tp.z - h.z)) / (d || 1) < 0.5) continue; }
+          doGrab(h, v); break;
+        }
+      }
+    }
+    if (G.over) return;
+  }
+}
+
+/* ---------- the player's grab button: lights up exactly when a press would take ---------- */
+function grabTarget() {
+  if (!G || G.screen !== 'game' || G.over || G.graceT > 0) return null;
+  const p = player();
+  if (p.tail !== 1 || p.grabCd > 0) return null;
+  let best = null, bd = 1e9;
+  for (const v of G.actors) { // NOT alive(): the principal is excluded there, but his tail is exactly the trap
+    if (v.id === 'p' || v.id === 't' || v.tail !== 1 || v.out) continue;
+    const tp = tailPos(v);
+    const d = Math.hypot(p.x - tp.x, p.z - tp.z);
+    if (d >= 0.95 || d >= bd) continue;
+    // face-to-face never takes: you have to be at their side or back
+    const vx = p.x - v.x, vz = p.z - v.z, vd = Math.hypot(vx, vz) || 1;
+    const vf = fwd(v);
+    if ((vf.x * vx + vf.z * vz) / vd >= 0.5) continue;
+    bd = d; best = v;
+  }
+  return best;
+}
+function tryGrab() {
+  const v = grabTarget();
+  if (v) doGrab(player(), v);
+}
+$('grabBtn').addEventListener('pointerdown', e => { e.preventDefault(); tryGrab(); });
+
+/* ---------- intruder waves: every time the field thins by ten, new faces pour in ---------- */
+const WAVES = [
+  { at: 10, label: '⚡ 他のクラスが乱入！', list: ['class', 'class', 'class', 'class', 'class', 'class', 'class', 'class', 'class', 'class'] },
+  { at: 10, label: '⚡ 先生たちが乱入！', list: ['teacher', 'teacher', 'teacher', 'teacher', 'principal', 'teacher', 'teacher', 'teacher', 'teacher', 'teacher'] },
+  { at: 10, label: '⚡ 地域の人が乱入！', list: ['local', 'local', 'local', 'local', 'local', 'local', 'local', 'local', 'local', 'local'] },
+  { at: 10, label: '⚡ 犬と猫が乱入！', list: ['dog', 'cat', 'dog', 'cat', 'dog', 'cat', 'dog', 'cat', 'dog', 'cat'] },
+  { at: 10, label: '⚡ 象とキリンと馬が乱入！', list: ['elephant', 'giraffe', 'horse', 'elephant', 'giraffe', 'horse', 'elephant', 'giraffe', 'horse', 'horse'] }
+];
+const WAVE_B = { at: 10, label: '⚡ 犬と猫が乱入！', list: ['dog', 'cat', 'dog', 'cat', 'dog', 'cat', 'dog', 'cat', 'dog', 'cat'] }; // the end rotation alternates the big-animal group and this one
+const KIND_NAMES = { class: '他のクラスの子', teacher: '先生', principal: '校長先生', local: '地域の人', dog: '犬', cat: '猫', elephant: '象', giraffe: 'キリン', horse: '馬' };
+function kindName(a) { return KIND_NAMES[a.wkind] || 'クラスメイト'; }
+function applyKind(a, kind, i) {
+  a.wkind = kind; // grab ability climbs a ladder: classmates weakest, elephant/giraffe strongest
+  if (kind === 'class') {
+    a.shirt = 0x35a852; a.shorts = 0xf0ead8; a.baseSpeed = 6.8 + Math.random() * 0.6;
+    a.canPause = Math.random() < 0.4;
+    a.lungeRange = 2.4; a.dashCdBase = 3.0; a.dashCdRand = 1.7; a.reach = 0.72;
+  } else if (kind === 'teacher') {
+    a.shirt = [0x20418f, 0x8f2020, 0x20603a, 0x37474f, 0x5a2d82][i % 5]; a.shorts = 0x23272e; a.hair = 0x1a1a1a; // teachers wear jerseys and have black hair — the suit and white hair are the principal's alone
+    a.scale = 1.2; a.baseSpeed = 6.6 + Math.random() * 0.5; a.turn = 2.5;
+    a.tailOff = 0.5; a.reach = 0.8; a.sep = 0.8;
+    a.lungeRange = 2.7; a.dashCdBase = 2.7; a.dashCdRand = 1.6;
+    a.canPause = Math.random() < 0.4;
+  } else if (kind === 'principal') {
+    a.shirt = 0x1f2733; a.shorts = 0x1a1d21; a.hair = 0xd8d8d8;
+    a.scale = 1.26; a.baseSpeed = 3.2; a.turn = 1.6; a.noDash = true; // the principal just strolls, never lunges
+    a.tailOff = 0.5; a.reach = 0.75; a.sep = 0.8;
+  } else if (kind === 'local') {
+    a.shirt = [0xd96c33, 0x8e44ad, 0x607d8b, 0x7a9e43, 0xb84a6e][i % 5]; a.shorts = 0x3a3f47;
+    a.scale = 1.22; a.baseSpeed = 6.3 + Math.random() * 0.6; a.turn = 2.4;
+    a.tailOff = 0.5; a.reach = 0.75; a.sep = 0.8;
+    a.lungeRange = 2.5; a.dashCdBase = 2.9; a.dashCdRand = 1.6;
+    a.canPause = Math.random() < 0.4;
+  } else if (kind === 'dog') {
+    a.kind = 'dog';
+    a.shirt = [0xb08954, 0x8a8d91][i % 2]; a.tailColor = a.shirt;
+    a.baseSpeed = 8.1; a.turn = 3.6; a.tailOff = 0.5; a.tailY = 0.6; a.sep = 0.7;
+    a.lungeRange = 3.0; a.dashCdBase = 2.3; a.dashCdRand = 1.4; a.reach = 0.8;
+  } else if (kind === 'cat') {
+    a.kind = 'cat';
+    a.shirt = [0xf2f2f2, 0x404040, 0xe8913a, 0xb08954, 0x8a8d91][i % 5]; a.tailColor = a.shirt;
+    a.baseSpeed = 8.4; a.turn = 4.2; a.tailOff = 0.42; a.reach = 0.8; a.tailY = 0.5; a.sep = 0.55;
+    a.lungeRange = 3.1; a.dashCdBase = 2.1; a.dashCdRand = 1.4;
+  } else if (kind === 'elephant') {
+    a.kind = 'elephant';
+    a.shirt = 0x9aa0a6; a.tailColor = 0x6a7076;
+    a.baseSpeed = 5.6; a.turn = 1.8; a.dashMul = 1.35; a.tailOff = 1.15; a.reach = 1.15; a.tailY = 1.05; a.sep = 1.9;
+    a.lungeRange = 3.5; a.dashCdBase = 1.7; a.dashCdRand = 1.2;
+  } else if (kind === 'giraffe') {
+    a.kind = 'giraffe';
+    a.shirt = 0xe3b959; a.tailColor = 0x8a6a34;
+    a.baseSpeed = 7.4; a.turn = 2.6; a.tailOff = 0.65; a.reach = 0.95; a.tailY = 1.3; a.sep = 0.95;
+    a.lungeRange = 3.3; a.dashCdBase = 1.9; a.dashCdRand = 1.2;
+  } else if (kind === 'horse') {
+    a.kind = 'horse';
+    a.shirt = [0x8a5a33, 0x6e4525, 0xa9743f, 0x54504c][i % 4]; a.tailColor = 0x2e2019;
+    a.baseSpeed = 8.8; a.turn = 3.0; a.tailOff = 0.95; a.reach = 0.9; a.tailY = 0.95; a.sep = 1.2;
+    a.lungeRange = 3.2; a.dashCdBase = 2.0; a.dashCdRand = 1.3;
+  }
+}
+function spawnWave(w) {
+  // no teleporting: the door opens and they file in (see the intro branch in tick)
+  G.timeLimit += 5; // every invasion buys five more seconds
+  const pt = $('plusT'); pt.classList.add('on'); clearTimeout(pt._t); pt._t = setTimeout(() => pt.classList.remove('on'), 1800);
+  G.waveQueue = { no: G.waveIdx, list: w.list.slice(), total: w.list.length };
+  G.waveBase = alive().length + w.list.length;
+  G.waveIdx++;
+  G.intro = true; G.waveSeqT = -0.9; // a beat for the door and the camera first
+  const cap = $('storyCap');
+  cap.textContent = w.label;
+  cap.classList.remove('hidden');
+  G.annT = 999;
+  tone(880, 0, 0.1, 'square', 0.07); tone(880, 0.16, 0.1, 'square', 0.07);
+  tone(150, 0.05, 0.5, 'sawtooth', 0.025, 70); // door creak
+  updateHud();
+}
+function spawnEntrant() {
+  const q = G.waveQueue;
+  const kind = q.list.shift();
+  const i = q.total - q.list.length - 1;
+  const a = mkActor('w' + q.no + '_' + i, 20 + q.no * 12 + i, false, false);
+  const big = kind === 'elephant' || kind === 'giraffe' || kind === 'horse';
+  a.x = 6 + (Math.random() - 0.5) * 0.8; a.z = 24.3; // just inside the door-side line: entrants step straight into the court
+  a.dir = Math.PI;
+  a.sit = 0; a.tail = 1; a.out = false; a.flyT = null;
+  a.grabCd = 1.2;
+  applyKind(a, kind, i);
+  a.entering = true;
+  a.enterX = clamp(6 + (i - (q.total - 1) / 2) * (big ? 2.6 : 1.5), -14, 14);
+  a.enterZ = 17.6 - (i % 3) * 1.7;
+  a.enterSpeed = Math.min(a.baseSpeed, 5.4);
+  G.actors.push(a);
+}
+function checkWaves() {
+  if (G.intro || G.waveCd > 0) return;
+  // a wave pours in every time the field has thinned by ten since the last refill;
+  // after the set waves, the big-animal group and the dog & cat group alternate forever
+  if (alive().length <= G.waveBase - 10) {
+    let w;
+    if (G.waveIdx < WAVES.length) w = WAVES[G.waveIdx];
+    else { w = G.repeatB ? WAVE_B : WAVES[4]; G.repeatB = !G.repeatB; }
+    spawnWave(w); G.waveCd = 1.2;
+  }
+}
+
+/* ---------- flow ---------- */
+const LOSE_BY_COUNT = [
+  { max: 0, lines: ['まず背後を取って1本。', '1本も取れず。次は背後を取ろう。', '逃げてばかりでは取れない。まず1本。'] },
+  { max: 2, lines: ['背後の気配に敏感に。', 'あと一歩で取れた場面もあった。', '背後を取れば景色が変わる。'] },
+  { max: 5, lines: ['なかなかの逃げっぷり。', '取って取られての、いい勝負。', '中盤の波は乗りこなした。'] },
+  { max: 9, lines: ['あと少しで頂点だった。', '終盤までよく残った。', '上位の動き、見えてきた。'] },
+  { max: 1e9, lines: ['頂点まであと一歩。', 'ほぼ制覇の動きだった。', '次は最後の1人だ。'] }
+];
+const LOSE_BY_KIND = {
+  'クラスメイト': ['クラスメイトの意地を見た。', '身内にやられた。悔しい。', 'いつものアイツにやられた。'],
+  '他のクラスの子': ['他のクラスの子、やるな。', 'よそのクラスのエースか。', '他のクラス、強すぎないか。'],
+  '先生': ['先生、体育の時間は本気だった。', '大人の本気にやられた。', '先生の本気、初めて見た。'],
+  '地域の人': ['地域の人、意外と本気。', '近所の底力を見た。', '地域の人、ただ者じゃなかった。'],
+  '犬': ['犬には勝てない。足の数が違う。', '犬のダッシュは反則級。', '犬の本気、見てしまった。'],
+  '猫': ['猫の反射神経、恐るべし。', '猫はすれ違いざまに取っていく。', '猫、しっぽ取りの才能があった。'],
+  '象': ['やはりゾウはでかかった。', '象のリーチは反則級。', '象が本気を出すとこうなる。'],
+  'キリン': ['キリンは首だけじゃない。足も速い。', 'キリンの間合いは広すぎる。', 'キリン、首から下も速かった。'],
+  '馬': ['やはり馬は速かった。', '馬の脚力は反則級。', '馬、しっぽ取りに本気だった。']
+};
+const LOSE_TIMEOUT = ['時間切れ。あと1本が遠かった。', '60秒、よく逃げ切った方だ。'];
+function loseComment(n) {
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  if (G.caughtBy && LOSE_BY_KIND[G.caughtBy] && Math.random() < 0.55) return pick(LOSE_BY_KIND[G.caughtBy]); // who took you flavours the comment
+  if (G.timeUp && Math.random() < 0.4) return pick(LOSE_TIMEOUT);
+  return pick(LOSE_BY_COUNT.find(t => n <= t.max).lines);
+}
+function gameOver(win, timeUp) {
+  if (G.over) return;
+  G.over = true; G.win = win; G.timeUp = !!timeUp;
+  if (win) sndWin(); else if (timeUp) sndWhistle(); else sndCaught();
+  setTimeout(() => { if (G.screen === 'game') showResult(); }, win ? 900 : 1200);
+}
+let shareImgData = null;
+function showResult() {
+  const n = G.taken;
+  const isBest = n > G.best;
+  if (isBest) { G.best = n; store.set('shippo_best', String(n)); }
+  submitScore(n);
+  const caught = !G.win && !G.timeUp && !G.principalTaken && G.caughtBy;
+  $('resHead').textContent = G.principalTaken ? '😱 校長先生のしっぽを取ってしまった…' : G.win ? '🏆 最後の1人！' : G.timeUp ? '⏰ 時間切れ！' : caught ? G.caughtBy + 'にしっぽを取られた' : 'しっぽ取られた…'; // caught losses are headed by "{name}にしっぽを取られた" — that line alone
+  $('resCaught').textContent = '';
+  $('resCaught').classList.add('hidden');
+  $('resScore').textContent = '🏳 ' + n + '本';
+  const comment = G.win ? '全員のしっぽ、いただきました。' : G.principalTaken ? (G.principalMsg || '権力には逆らえない') : loseComment(n);
+  $('resComment').textContent = comment;
+  $('resTime').textContent = '⏱ ' + G.time.toFixed(1) + '秒 生き残った';
+  $('resNew').classList.toggle('hidden', !isBest || n === 0);
+  $('resBest').textContent = '自己ベスト：' + G.best + '本';
+  const text = G.principalTaken
+    ? '🏳 『しっぽ取り鬼ごっこ』\n校長先生のしっぽを取ってしまった…「' + (G.principalMsg || '権力には逆らえない') + '」 ' + n + '本取ってたのに'
+    : G.win
+    ? '🏳 『しっぽ取り鬼ごっこ』\n最後の1人になった！ ' + n + '本取って優勝'
+    : '🏳 『しっぽ取り鬼ごっこ』\nしっぽ ' + n + '本取った！' + (caught ? '（' + G.caughtBy + 'に取られた）' : '');
+  $('resShareBtn').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(text) + '&hashtags=' + encodeURIComponent('しっぽ取り鬼ごっこ,ブラウザゲーム,インディーゲーム') + '&url=' + encodeURIComponent('https://sa008ta.github.io/shippo-tori/');
+  shareImgData = { text: text + '\n#しっぽ取り鬼ごっこ #ブラウザゲーム #インディーゲーム\nhttps://sa008ta.github.io/shippo-tori/', title: 'しっぽ取り鬼ごっこ', lines: G.principalTaken ? ['校長先生のしっぽを取ってしまった…', comment] : G.win ? ['最後の1人！', comment] : [n + '本取った！', ...(caught ? [G.caughtBy + 'に取られた'] : []), comment] };
+  setHud(false);
+  showScreen('result');
+}
+function backToTitle() {
+  G.screen = 'title';
+  G.actors = setupClassroom();
+  if (window.R3D) R3D.reset();
+  G.actors = setupClassroom();
+  setHud(false);
+  $('skipBtn').classList.add('hidden');
+  $('storyCap').classList.add('hidden');
+  refreshTitleBest();
+  showScreen('title');
+}
+function refreshTitleBest() { $('titleBest').textContent = '自己ベスト：' + G.best + '本'; }
+
+/* ---------- ranking UI ---------- */
+async function loadRank() {
+  const el = $('rankList');
+  if (!RANK_SHEET) { el.textContent = 'まだ始まっていません'; return; }
+  el.textContent = '読み込み中…';
+  const rows = await sheetLoad(RANK_SHEET);
+  if (!rows) { el.textContent = '読み込みに失敗しました'; return; }
+  const byPid = {};
+  for (const r of rows) {
+    const name = r[1], score = +r[2], pid = r[3];
+    if (!pid || !isFinite(score)) continue;
+    if (!byPid[pid] || score > byPid[pid].score) byPid[pid] = { name: name || 'NONAME', score };
+  }
+  const list = Object.values(byPid).sort((a, b) => b.score - a.score).slice(0, 20);
+  if (!list.length) { el.textContent = 'まだ記録がありません'; return; }
+  el.innerHTML = list.map((e, i) =>
+    '<div class="rankRow" style="background:' + (i % 2 ? '#ffffff' : '#f7f1de') + '"><span>' + (i + 1) + '位　' +
+    cleanName(e.name, 'NONAME').replace(/</g, '&lt;') + '</span><b>' + e.score + '本</b></div>').join('');
+}
+
+/* ---------- share image ---------- */
+function buildShareImage(cb) {
+  const d = shareImgData;
+  if (!d || !window.R3D || !R3D.snapshot) { cb(null); return; }
+  const snap = R3D.snapshot();
+  if (!snap) { cb(null); return; }
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const S = 1080, out = document.createElement('canvas'); out.width = S; out.height = S;
+      const c = out.getContext('2d');
+      const sc = Math.max(S / img.width, S / img.height);
+      const w = img.width * sc, h = img.height * sc;
+      c.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+      const grd = c.createLinearGradient(0, S * 0.5, 0, S);
+      grd.addColorStop(0, 'rgba(16,12,4,0)'); grd.addColorStop(0.45, 'rgba(16,12,4,0.8)'); grd.addColorStop(1, 'rgba(16,12,4,0.94)');
+      c.fillStyle = grd; c.fillRect(0, S * 0.5, S, S * 0.5);
+      c.textAlign = 'center';
+      c.fillStyle = '#ffd94d'; c.font = '900 56px sans-serif';
+      c.fillText(d.title, S / 2, S * 0.665);
+      c.fillStyle = '#ffffff';
+      d.lines.forEach((ln, i) => { c.font = (i === 0 ? '900 62px' : '700 46px') + ' sans-serif'; c.fillText(ln, S / 2, S * 0.665 + 88 + i * 68); });
+      out.toBlob(b => cb(b), 'image/png');
+    } catch (e) { cb(null); }
+  };
+  img.onerror = () => cb(null);
+  img.src = snap;
+}
+function wireImgShare() {
+  const b = $('imgShareBtn');
+  if (!b) return;
+  b.addEventListener('click', () => {
+    if (!shareImgData) return;
+    if (!navigator.share) { const s0 = $('resShareBtn'); if (s0) { const t0 = document.createElement('a'); t0.href = s0.href; t0.target = '_blank'; t0.rel = 'noopener'; document.body.appendChild(t0); t0.click(); t0.remove(); } return; }
+    const openIntent = () => { const s = $('resShareBtn'); if (!s) return; const t = document.createElement('a'); t.href = s.href; t.target = '_blank'; t.rel = 'noopener'; document.body.appendChild(t); t.click(); t.remove(); };
+    buildShareImage(blob => {
+      if (blob && navigator.share) {
+        const data = { files: [new File([blob], 'result.png', { type: 'image/png' })], text: shareImgData.text };
+        navigator.share(data).catch(err => { if (!err || err.name !== 'AbortError') openIntent(); });
+        return;
+      }
+      openIntent();
+    });
+  });
+}
+
+/* ---------- main loop ---------- */
+const keys = {};
+addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; if (e.key === ' ') { e.preventDefault(); tryGrab(); } });
+addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+function storyCamPos() {
+  if (G.screen === 'story' && G.standDone) {
+    const p = player();
+    return { x: p.x - Math.sin(p.dir) * 5.4, y: 3.0, z: p.z - Math.cos(p.dir) * 5.4 };
+  }
+  return { x: 6.6, y: 3.3, z: 3.2 };
+}
+function storyCamLook() {
+  if (G.screen === 'story' && G.standDone) {
+    const p = player();
+    return { x: p.x, y: 1.0, z: p.z - 2 };
+  }
+  return { x: 0, y: 0.9, z: -9.8 };
+}
+function buildState() {
+  return {
+    camMode: (G.screen === 'game' && !G.intro) ? 'game' : 'story',
+    camDir: G.camDir, timeScale: G.timeScale || 1, doorOpen: G.intro ? 1 : 0,
+    camPos: G.intro ? { x: 0.2, y: 2.7, z: 13.6 } : storyCamPos(), camLook: G.intro ? { x: 6, y: 1.0, z: 24.6 } : storyCamLook(),
+    actors: G.actors.map(a => ({
+      id: a.id, kind: a.kind, x: a.x, z: a.z, dir: a.dir, run: a.runF, sit: a.sit, bounce: a.bounce,
+      tail: a.tail === 1 ? 1 : (a.flyT !== null && a.flyT < 1.15 ? 2 : 0), tailY: a.tailY,
+      shirt: a.shirt, shorts: a.shorts, skin: a.skin, hair: a.hair, tailColor: a.tailColor, scale: a.scale
+    }))
+  };
+}
+function tick(dt) {
+  for (const a of G.actors) if (a.flyT !== null) a.flyT += dt;
+  if (G.screen === 'story') {
+    G.storyT += dt;
+    const t = G.storyT;
+    if (t > 0.4 && !G.capDone) {
+      G.capDone = true;
+      const cap = $('storyCap');
+      cap.textContent = '🧑‍🏫 先生「今日は しっぽ取り鬼ごっこを するぞー！」';
+      cap.classList.remove('hidden');
+    }
+    if (t > 2.4 && !G.cheerDone) {
+      G.cheerDone = true;
+      for (const a of G.actors) if (a.id !== 't') a.bounce = true;
+      const cp = $('cheerPop');
+      cp.classList.remove('on'); void cp.offsetWidth; cp.classList.add('on');
+      sndCheer();
+      $('storyCap').classList.add('hidden');
+    }
+    if (t > 4.2 && !G.standDone) {
+      G.standDone = true;
+      for (const a of G.actors) if (a.id !== 't') { a.bounce = false; a.sit = 0; a.tail = 1; }
+    }
+    if (t > 5.4) startGame();
+    return;
+  }
+  if (G.screen !== 'game') return;
+  const p = player();
+  if (G.intro && !G.over) {
+    // entrance performance: the 60s timer and everyone on the field freeze while the door opens and the wave files in
+    G.waveSeqT += dt;
+    if (G.waveQueue && G.waveQueue.list.length && G.waveSeqT >= 0.35) { G.waveSeqT = 0; spawnEntrant(); }
+    let stillEntering = false;
+    for (const a of G.actors) {
+      if (a.entering) {
+        stillEntering = true;
+        turnToward(a, Math.atan2(a.enterX - a.x, a.enterZ - a.z), a.turn, dt);
+        a.speed += clamp(a.enterSpeed - a.speed, -20 * dt, 14 * dt);
+        moveActor(a, dt);
+        if (Math.hypot(a.enterX - a.x, a.enterZ - a.z) < 0.5) { a.entering = false; a.speed = 0; }
+      } else {
+        a.runF += (0 - a.runF) * Math.min(1, dt * 8);
+      }
+    }
+    if ((!G.waveQueue || !G.waveQueue.list.length) && !stillEntering) { G.intro = false; G.annT = 1.2; G.resumeHold = 0.9; } // camera back to the game view, then a small pause before play resumes
+    return;
+  }
+  if (!G.over) {
+    if (G.resumeHold > 0) { G.resumeHold -= dt; return; }
+    G.time += dt;
+    if (!G.over && G.time >= G.timeLimit) { G.time = G.timeLimit; gameOver(false, true); } // the time limit (waves extend it)
+    { const remain = Math.max(0, Math.ceil(G.timeLimit - G.time)); if (remain !== G.lastSec) { G.lastSec = remain; const tp = $('timePill'); tp.textContent = '⏱ ' + remain; tp.style.color = remain <= 10 ? '#ff5040' : ''; } }
+    if (G.graceT > 0) G.graceT -= dt;
+    if (G.dashCd > 0) G.dashCd -= dt;
+    if (G.dashT > 0) G.dashT -= dt;
+    $('dashBtn').classList.toggle('cd', G.exhaustT > 0 || G.stamina <= 0);
+    $('stamBar').style.width = G.stamina.toFixed(0) + '%';
+    $('stamBar').style.background = G.exhaustT > 0 ? '#e23b2e' : '';
+    const gr = !!grabTarget();
+    if (gr !== G.grabReady) { G.grabReady = gr; $('grabBtn').classList.toggle('ready', gr); }
+    // player input → world move vector (camera relative)
+    let mx = 0, mz = 0;
+    const cf = { x: Math.sin(G.camDir), z: Math.cos(G.camDir) };
+    const cr = { x: -cf.z, z: cf.x };
+    if (stick.on && (Math.abs(stick.dx) > 6 || Math.abs(stick.dy) > 6)) {
+      const m = Math.hypot(stick.dx, stick.dy);
+      const s = clamp(m / 34, 0.25, 1); // full speed at a 34px drag — small thumb movements are enough, the finger stays on the phone
+      const sf = { x: Math.sin(stick.baseDir), z: Math.cos(stick.baseDir) };
+      const sr = { x: -sf.z, z: sf.x };
+      mx = (sr.x * stick.dx + sf.x * -stick.dy) / m * s;
+      mz = (sr.z * stick.dx + sf.z * -stick.dy) / m * s;
+    } else {
+      let kx = 0, kz = 0;
+      if (keys['arrowup'] || keys['w']) kz += 1;
+      if (keys['arrowdown'] || keys['s']) kz -= 1;
+      if (keys['arrowleft'] || keys['a']) kx -= 1;
+      if (keys['arrowright'] || keys['d']) kx += 1;
+      if (kx || kz) {
+        const m = Math.hypot(kx, kz);
+        mx = (cr.x * kx + cf.x * kz) / m;
+        mz = (cr.z * kx + cf.z * kz) / m;
+      }
+    }
+    // right stick = camera orbit, applied incrementally in the pointermove handler (never swings on its own)
+    const mm = Math.hypot(mx, mz);
+    const mdObj = { get dir() { return p.moveDir; }, set dir(v) { p.moveDir = v; } };
+    if (G.dashT > 0) {
+      // committed lunge along the facing at dash start
+      p.moveDir = G.dashDir;
+      turnToward(p, G.dashDir, 18, dt);
+      p.speed += clamp(p.baseSpeed * 1.5 - p.speed, -40 * dt, 34 * dt);
+    } else if (mm > 0.01) {
+      const moveHeading = Math.atan2(mx, mz);
+      turnToward(mdObj, moveHeading, 16, dt); // tighter turning: the move direction swings round much faster
+      turnToward(p, moveHeading, p.turn, dt); // the body faces where it runs
+      let dAng = moveHeading - p.moveDir;
+      while (dAng > Math.PI) dAng -= Math.PI * 2;
+      while (dAng < -Math.PI) dAng += Math.PI * 2;
+      const cutIn = Math.abs(dAng) > Math.PI / 2 ? 0.55 : 1; // reversing hard: bleed speed so the arc stays tight instead of swinging wide
+      const target = (G.exhaustT > 0 ? Math.min(p.baseSpeed * 0.45, p.baseSpeed * clamp(mm, 0, 1)) : p.baseSpeed * clamp(mm, 0, 1)) * cutIn;
+      p.speed += clamp(target - p.speed, -48 * dt, 38 * dt);
+    } else {
+      p.speed += clamp(0 - p.speed, -60 * dt, 38 * dt);
+    }
+    moveActor(p, dt, p.moveDir);
+    if (G.exhaustT > 0) G.exhaustT -= dt;
+    // stamina refills only while walking (gentle stick) or standing still — full-speed running just holds it
+    if (G.dashT <= 0 && mm <= 0.55 && G.stamina < 100) G.stamina = Math.min(100, G.stamina + 15 * dt);
+    // NPCs
+    for (const a of G.actors) {
+      if (a.id === 'p' || a.id === 't' || a.out) continue;
+      a.thinkT -= dt;
+      if (a.thinkT <= 0) { a.thinkT = 0.12; npcThink(a); }
+      if (a.grabCd > 0) a.grabCd -= dt;
+      // some people stop and stand around for a moment (never while fleeing or lunging)
+      if (a.canPause && a.dashT <= 0) {
+        if (a.pauseT > 0) { if (!a.flee) a.pauseT -= dt; }
+        else if (!a.flee) { a.idleT -= dt; if (a.idleT <= 0) { a.pauseT = 1 + Math.random() * 1.6; a.idleT = 4 + Math.random() * 5; } }
+      }
+      // lunge: close behind a target -> dash at its tail (the only way to take it)
+      if (a.dashT > 0) a.dashT -= dt;
+      if (a.dashCd > 0) a.dashCd -= dt;
+      if (a.hasTarget && !a.flee && !a.noDash && a.pauseT <= 0 && a.dashCd <= 0 && a.tgt && a.tgt.tail === 1 && !a.tgt.out) {
+        const tp = tailPos(a.tgt);
+        const d = Math.hypot(a.x - tp.x, a.z - tp.z);
+        if (d < (a.lungeRange || 2.7) * (a.tgt.id === 'p' ? (G.exhaustT > 0 ? 1.5 : 1.2) : 1)) { // hunters commit to a lunge at the player from a bit further out — you should get caught sometimes
+          const bf = fwd(a.tgt);
+          const bx = a.x - a.tgt.x, bz = a.z - a.tgt.z, bd = Math.hypot(bx, bz) || 1;
+          if ((bf.x * bx + bf.z * bz) / bd < -0.05 || d < 1.3) { a.dashT = 0.42; a.dashCd = (a.dashCdBase || 2.6) + Math.random() * (a.dashCdRand || 1.8); }
+        }
+      }
+      if (a.hasTarget) {
+        // near the target point, steer gently — full-rate turning at point-blank makes the heading tremble
+        const td = Math.hypot(a.tx - a.x, a.tz - a.z);
+        turnToward(a, Math.atan2(a.tx - a.x, a.tz - a.z), a.turn * clamp(td / 1.2, 0.25, 1), dt);
+        const paused = a.pauseT > 0 && !a.flee;
+        const target = paused ? 0 : a.baseSpeed * (a.flee ? 1.04 : 1) * (G.time > 60 ? 1.06 : 1) * (a.dashT > 0 ? (a.dashMul || 1.5) : 1);
+        a.speed += clamp(target - a.speed, paused ? -30 * dt : -24 * dt, a.dashT > 0 ? 26 * dt : 12 * dt);
+      } else {
+        a.speed += clamp(0 - a.speed, -20 * dt, 20 * dt);
+      }
+      moveActor(a, dt);
+    }
+    if (p.grabCd > 0) p.grabCd -= dt;
+    // separation
+    const movers = G.actors.filter(a => a.id !== 't');
+    for (let i = 0; i < movers.length; i++) for (let j = i + 1; j < movers.length; j++) {
+      const A = movers[i], B = movers[j];
+      const dx = B.x - A.x, dz = B.z - A.z, d = Math.hypot(dx, dz);
+      const minD = ((A.sep || 0.72) + (B.sep || 0.72)) / 2;
+      if (d > 0.001 && d < minD) {
+        const push = (minD - d) / 2 * 0.35, ux = dx / d, uz = dz / d; // spring, not a snap — a full correction every frame trembles
+        if (!A.out) { A.x -= ux * push; A.z -= uz * push; }
+        if (!B.out) { B.x += ux * push; B.z += uz * push; }
+        const mA = actorMargin(A), mB = actorMargin(B);
+        A.x = clamp(A.x, -GYM_X + mA, GYM_X - mA); A.z = clamp(A.z, GYM_ZN + mA, GYM_Z - mA);
+        B.x = clamp(B.x, -GYM_X + mB, GYM_X - mB); B.z = clamp(B.z, GYM_ZN + mB, GYM_Z - mB);
+      }
+    }
+    checkGrabs();
+    // a kid who lost their tail sits for ten seconds, then leaves the field
+    if (G.actors.some(a => a.out && a.outT != null && G.time - a.outT >= 10)) G.actors = G.actors.filter(a => !(a.out && a.outT != null && G.time - a.outT >= 10));
+    checkWaves();
+    if (G.waveCd > 0) G.waveCd -= dt;
+    if (G.annT > 0) { G.annT -= dt; if (G.annT <= 0) $('storyCap').classList.add('hidden'); }
+    // danger vignette: hunter close behind the player
+    let danger = 0;
+    if (p.tail === 1) {
+      const pf = fwd(p);
+      for (const a of alive()) {
+        if (a.id === 'p') continue;
+        const dx = a.x - p.x, dz = a.z - p.z, d = Math.hypot(dx, dz);
+        if (d < 4.6 && (pf.x * dx + pf.z * dz) / (d || 1) < -0.1) danger = Math.max(danger, (4.6 - d) / 4.6 * (a.dashT > 0 ? 1.5 : 0.55));
+      }
+    }
+    $('danger').style.opacity = (danger * 0.9).toFixed(2);
+  } else {
+    $('danger').style.opacity = 0;
+    for (const a of G.actors) { a.speed = 0; a.runF += (0 - a.runF) * Math.min(1, dt * 8); }
+  }
+}
+let lastTs = 0, bootT = performance.now(), errShown = false;
+function loop(ts) {
+  requestAnimationFrame(loop);
+  const rawDt = clamp((ts - lastTs) / 1000 || 0, 0, 0.05);
+  lastTs = ts;
+  if (!window.R3D) {
+    if (!errShown && performance.now() - bootT > 9000) { errShown = true; $('loadErr').classList.remove('hidden'); }
+    return;
+  }
+  // slow motion (the moment the player is caught): real seconds on slowT, everything else scales
+  if (G.slowT > 0) G.slowT -= rawDt;
+  G.timeScale = G.slowT > 0 ? 0.16 : 1;
+  tick(rawDt * G.timeScale);
+  R3D.frame(buildState());
+}
+requestAnimationFrame(loop);
+
+/* ---------- wiring ---------- */
+$('name1').value = store.get('shippo_name', '');
+$('name1').addEventListener('input', () => store.set('shippo_name', $('name1').value.trim().slice(0, 10)));
+$('startBtn').onclick = () => { ac(); if (!G.playedOnce) startStory(); else startGame(); };
+$('againBtn').onclick = () => startGame();
+$('resTitleBtn').onclick = () => backToTitle();
+$('quitBtn').onclick = () => backToTitle();
+$('rankBtn').onclick = () => { showScreen('rank'); loadRank(); };
+$('rankBackBtn').onclick = () => showScreen('title');
+$('skipBtn').onclick = () => startGame();
+wireImgShare();
+refreshTitleBest();
+showScreen('title');
+</script>
+</body>
+</html>
