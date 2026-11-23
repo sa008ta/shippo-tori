@@ -857,6 +857,8 @@ function startStory() {
 function startGame() {
   $('skipBtn').classList.add('hidden');
   $('storyCap').classList.add('hidden');
+  G.actors = setupClassroom(); // full roster every run: fallen actors are deleted from G.actors 10s after dropping out, so reusing the old array would start the next run with fewer people
+  if (window.R3D) R3D.reset();
   const p = player();
   p.x = 0; p.z = 15; p.dir = Math.PI; p.sit = 0; p.tail = 1; p.out = false; p.flyT = null; p.speed = 0;
   const spots = [[-12, -14], [-6, -16], [0, -15], [6, -16], [12, -14], [-13, -6], [-8, -8], [8, -8], [13, -6], [-12, 2], [-7, 0], [7, 0], [12, 2], [-11, 9], [-5, 11], [5, 11], [11, 9], [0, 5], [-13, 14], [13, 15], [-3, -11], [3, -11], [-10, 5], [10, 5], [-4, 17], [4, 17], [0, -5], [-13, -11], [13, -11], [0, 18]];
@@ -1110,6 +1112,7 @@ function spawnEntrant() {
   a.enterZ = 15.0 - (i % 3) * 1.7;
   a.enterSpeed = Math.min(a.baseSpeed, 5.4);
   G.actors.push(a);
+  updateHud(); // each entrant who files in raises the remaining count on the spot
 }
 function checkWaves() {
   if (G.intro || G.waveCd > 0) return;
