@@ -33,18 +33,19 @@
   .btn.sub { background:#f5eedd; color:#6b4a1f; box-shadow:0 4px 0 #d8c49a; font-size:15px; }
   .btn:active { transform:translateY(3px); box-shadow:none; }
   .bestLine { font-size:13px; font-weight:800; color:#8a6d3b; margin-top:8px; }
-  #hud { position:fixed; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:20; pointer-events:none; }
-  .pill { display:inline-block; background:rgba(255,255,255,.94); border-radius:999px; padding:9px 16px; font-weight:900; font-size:15px; box-shadow:0 4px 14px rgba(20,30,10,.25); color:#33302a; }
-  #plusT { display:inline-block; margin-left:5px; font-weight:900; font-size:17px; color:#2e9e4f; opacity:0; transform:scale(.7); transition:opacity .25s, transform .25s; vertical-align:middle; }
+  html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  #hud { position:fixed; top:calc(36px + env(safe-area-inset-top)); left:10px; right:10px; z-index:20; pointer-events:none; display:flex; flex-wrap:wrap; align-items:flex-start; gap:5px; }
+  .pill { display:inline-block; background:rgba(255,255,255,.94); border-radius:999px; padding:6px 11px; font-weight:900; font-size:13px; box-shadow:0 4px 14px rgba(20,30,10,.25); color:#33302a; white-space:nowrap; line-height:1.25; }
+  #plusT { display:inline-block; margin-left:4px; font-weight:900; font-size:13px; color:#2e9e4f; opacity:0; transform:scale(.7); transition:opacity .25s, transform .25s; vertical-align:middle; }
   #plusT.on { opacity:1; transform:scale(1.1); }
-  #quitBtn { position:fixed; top:calc(58px + env(safe-area-inset-top)); right:10px; z-index:21; border:none; background:rgba(255,255,255,.92); color:#6b5a3e; font-family:inherit; font-weight:900; font-size:13px; border-radius:999px; padding:9px 15px; cursor:pointer; box-shadow:0 4px 14px rgba(20,30,10,.2); }
+  #quitBtn { margin-left:auto; pointer-events:auto; border:none; background:rgba(255,255,255,.92); color:#6b5a3e; font-family:inherit; font-weight:900; font-size:13px; border-radius:999px; padding:6px 11px; cursor:pointer; box-shadow:0 4px 14px rgba(20,30,10,.2); white-space:nowrap; }
   #dashBtn { position:fixed; right:16px; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:21; width:92px; height:92px; border-radius:50%; border:none; background:radial-gradient(circle at 35% 30%, #ffe27a, #f5a623); color:#4a2f00; font-family:inherit; font-weight:900; font-size:17px; box-shadow:0 6px 0 #c47f0a, 0 10px 22px rgba(0,0,0,.3); cursor:pointer; }
   #dashBtn:active { transform:translateY(4px); box-shadow:0 2px 0 #c47f0a; }
   #dashBtn.cd { filter:grayscale(.7); opacity:.55; }
   #grabBtn { position:fixed; right:16px; bottom:calc(126px + env(safe-area-inset-bottom)); z-index:21; width:92px; height:92px; border-radius:50%; border:none; background:radial-gradient(circle at 35% 30%, #ff9d8a, #e23b2e); color:#fff; font-family:inherit; font-weight:900; font-size:19px; box-shadow:0 6px 0 #9c1f14, 0 10px 22px rgba(0,0,0,.3); cursor:pointer; opacity:.45; filter:grayscale(.65); transition:opacity .12s, filter .12s; }
   #grabBtn:active { transform:translateY(4px); box-shadow:0 2px 0 #9c1f14; }
   #grabBtn.ready { opacity:1; filter:none; animation:grabPulse .5s ease-in-out infinite alternate; }
-  #stamWrap { margin-top:6px; width:150px; height:8px; border-radius:5px; background:rgba(10,16,24,.45); overflow:hidden; }
+  #stamWrap { flex-basis:100%; margin-top:1px; width:150px; max-width:150px; height:8px; border-radius:5px; background:rgba(10,16,24,.45); overflow:hidden; }
   #stamBar { height:100%; width:100%; border-radius:5px; background:linear-gradient(90deg, #57d95e, #b7e04a); transition:width .12s linear; }
   @keyframes grabPulse { from { box-shadow:0 6px 0 #9c1f14, 0 0 0 0 rgba(255,210,62,.75); } to { box-shadow:0 6px 0 #9c1f14, 0 0 0 16px rgba(255,210,62,0); } }
   #danger { position:fixed; inset:0; z-index:15; pointer-events:none; opacity:0; background:radial-gradient(ellipse at center, transparent 52%, rgba(230,40,30,.55) 100%); }
@@ -68,11 +69,11 @@
 <div id="danger"></div>
 <div id="hud" class="hidden">
   <span class="pill" id="takePill">🏳 しっぽ 0本</span>
-  <span class="pill" id="remainPill" style="margin-left:6px">のこり 30人</span>
-<span class="pill" id="timePill" style="margin-left:6px">⏱ 60</span><span id="plusT">+5</span>
+  <span class="pill" id="remainPill">のこり 30人</span>
+<span class="pill" id="timePill"><span id="timeTxt">⏱ 60</span><span id="plusT">+5</span></span>
+<button id="quitBtn" class="hidden">やめる</button>
 <div id="stamWrap"><div id="stamBar"></div></div>
 </div>
-<button id="quitBtn" class="hidden">やめる</button>
 <button id="dashBtn" class="hidden">💨<br>ダッシュ</button>
 <button id="grabBtn" class="hidden">🏳<br>とる</button>
 <div id="storyCap" class="hidden"></div>
@@ -1205,15 +1206,16 @@ async function loadRank() {
   const rows = await sheetLoad(RANK_SHEET);
   if (!rows) { el.textContent = '読み込みに失敗しました'; return; }
   const byPid = {};
-  for (const r of rows) {
+  rows.forEach((r, idx) => {
     const name = r[1], pid = r[3];
     const score = +String(r[2] == null ? '' : r[2]).split(',')[0]; // a few rows from the short-lived time-carrying build are "本数,秒数" — the tails count is before the comma
-    if (!pid || !isFinite(score)) continue;
-    if (!byPid[pid] || score > byPid[pid].score) byPid[pid] = { name: name || 'NONAME', score };
-  }
+    if (!pid || !isFinite(score)) return;
+    // ties go to whoever recorded the count FIRST: rows are append-only, so the row index is the record order — a later equal row never replaces the earlier one
+    if (!byPid[pid] || score > byPid[pid].score) byPid[pid] = { name: name || 'NONAME', score, first: idx };
+  });
   const myE = byPid[playerId()];
   if (G.best > 0 && (!myE || myE.score < G.best)) submitScore(G.best, true); // 送信ロスト時の再送（シート照合）
-  const list = Object.values(byPid).sort((a, b) => b.score - a.score).slice(0, 20);
+  const list = Object.values(byPid).sort((a, b) => (b.score - a.score) || (a.first - b.first)).slice(0, 20);
   if (!list.length) { el.textContent = 'まだ記録がありません'; return; }
   el.innerHTML = list.map((e, i) =>
     '<div class="rankRow" style="background:' + (i % 2 ? '#ffffff' : '#f7f1de') + '"><span>' + (i + 1) + '位　' +
@@ -1347,7 +1349,7 @@ function tick(dt) {
     if (G.resumeHold > 0) { G.resumeHold -= dt; return; }
     G.time += dt;
     if (!G.over && G.time >= G.timeLimit) { G.time = G.timeLimit; gameOver(false, true); } // the time limit (waves extend it)
-    { const remain = Math.max(0, Math.ceil(G.timeLimit - G.time)); if (remain !== G.lastSec) { G.lastSec = remain; const tp = $('timePill'); tp.textContent = '⏱ ' + remain; tp.style.color = remain <= 10 ? '#ff5040' : ''; } }
+    { const remain = Math.max(0, Math.ceil(G.timeLimit - G.time)); if (remain !== G.lastSec) { G.lastSec = remain; $('timeTxt').textContent = '⏱ ' + remain; $('timePill').style.color = remain <= 10 ? '#ff5040' : ''; } }
     if (G.graceT > 0) G.graceT -= dt;
     if (G.dashCd > 0) G.dashCd -= dt;
     if (G.dashT > 0) G.dashT -= dt;
