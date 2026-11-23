@@ -698,7 +698,7 @@ function formPost(url, ent, data) {
   try {
     const body = new URLSearchParams();
     for (const k in data) body.append(ent[k], String(data[k]));
-    fetch(url, { method: 'POST', mode: 'no-cors', body }).catch(() => {});
+    fetch(url, { method: 'POST', mode: 'no-cors', body, keepalive: true }).catch(() => {});
   } catch (e) {}
 }
 async function sheetLoad(sheetId) {
@@ -709,10 +709,10 @@ async function sheetLoad(sheetId) {
     return j.table.rows.map(row => (row.c || []).map(c => (c && c.v != null ? String(c.v) : '')));
   } catch (e) { return null; }
 }
-function submitScore(score) {
+function submitScore(score, force) {
   if (!RANK_POST || score <= 0) return;
   const sub = +(store.get('shippo_sub', '0') || 0);
-  if (score <= sub) return;
+  if (!force && score <= sub) return;
   store.set('shippo_sub', String(score));
   formPost(RANK_POST, RANK_ENT, { name: myName(), score, pid: playerId(), date: new Date().toISOString().slice(0, 10) });
 }
@@ -1185,10 +1185,13 @@ async function loadRank() {
   if (!rows) { el.textContent = '読み込みに失敗しました'; return; }
   const byPid = {};
   for (const r of rows) {
-    const name = r[1], score = +r[2], pid = r[3];
+    const name = r[1], pid = r[3];
+    const score = +String(r[2] == null ? '' : r[2]).split(',')[0]; // a few rows from the short-lived time-carrying build are "本数,秒数" — the tails count is before the comma
     if (!pid || !isFinite(score)) continue;
     if (!byPid[pid] || score > byPid[pid].score) byPid[pid] = { name: name || 'NONAME', score };
   }
+  const myE = byPid[playerId()];
+  if (G.best > 0 && (!myE || myE.score < G.best)) submitScore(G.best, true); // 送信ロスト時の再送（シート照合）
   const list = Object.values(byPid).sort((a, b) => b.score - a.score).slice(0, 20);
   if (!list.length) { el.textContent = 'まだ記録がありません'; return; }
   el.innerHTML = list.map((e, i) =>
